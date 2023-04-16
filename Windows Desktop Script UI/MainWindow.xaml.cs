@@ -6,6 +6,8 @@ using WinRT.Interop;
 using System.Diagnostics;
 using System.Xml.Linq;
 using Windows.UI.WindowManagement;
+using System.Collections.Generic;
+using Windows.UI.Core;
 
 namespace Windows_Desktop_Script_UI
 {
@@ -24,6 +26,9 @@ namespace Windows_Desktop_Script_UI
         // Args parsing helper
         CLIArgs m_CLIArgs;
 
+        // FileWatcher instance
+        FileWatcher m_fileWatcher;
+
         public MainWindow(App app, string[] cmdargs)
         {
 
@@ -39,7 +44,7 @@ namespace Windows_Desktop_Script_UI
 
 
             // Display help message if requested and close app
-            if (m_CLIArgs.hasFlag("help") || m_CLIArgs.hasFlag("h"))
+            if (m_CLIArgs.hasFlag("help") | m_CLIArgs.hasFlag("h") | !m_CLIArgs.hasOption("WatchPath"))
             {
 
                 Log.Write("Showing help message");
@@ -47,11 +52,8 @@ namespace Windows_Desktop_Script_UI
                 // Show help message
                 ShowHelp();
 
-                // Exit app
-                m_App.Exit();
-
                 // Terminate process
-                Environment.Exit(0);
+                Terminate();
             }
 
 
@@ -103,12 +105,24 @@ namespace Windows_Desktop_Script_UI
 
                 Log.Write("Watching file for changes '" + watchPath + "'");
 
-                // TODO
+                m_fileWatcher = new FileWatcher(watchPath, m_CLIArgs.hasFlag("Debug"));
+                m_fileWatcher.NewLine += OnNewLine;
             }
 
         }
 
+        // Terminate process
+        private void Terminate()
+        {
+            // Exit app
+            m_App.Exit();
 
+            // Terminate process
+            Environment.Exit(0);
+        }
+
+
+        // Retrieve AppWindow object
         private void GetAppWindow()
         {
             IntPtr hWnd = WindowNative.GetWindowHandle(this);
@@ -117,27 +131,51 @@ namespace Windows_Desktop_Script_UI
         }
 
 
+        // Update window name
         private void ChangeWindowName(string name)
         {
             m_AppWindow.Title = name;
         }
 
+        // Change window to full screen
         private void SetFullScreen()
         {
             m_AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
         }
 
 
+        // Show help message
         private void ShowHelp()
         {
             Console.WriteLine("Orchestrated Window");
-            Console.WriteLine("Usage : <bin>.exe [OPTIONS] [FLAGS]");
+            Console.WriteLine("Usage : <bin>.exe --WatchPath=<FILE> [OPTIONS] [FLAGS]");
             Console.WriteLine("Options : ");
             Console.WriteLine("--WatchPath=<FILE>         Set orchestrator file path");
             Console.WriteLine("--WindowTitle=<NAME>       Set Window name");
             Console.WriteLine("--WelcomeMessage=<MESSAGE> Set Window name");
             Console.WriteLine("-FullScreen                Set Window full screen");
+            Console.WriteLine("-Debug                     Set Window full screen");
             Console.WriteLine("-h, -help                  Display this message");
+        }
+
+        
+        // New line handler
+        private async void OnNewLine(object sender, IList<string> newLines)
+        {
+            Log.Write("New line detected\n\x1b[93m" + String.Join("\n", newLines) + "\x1b[39m");
+
+            if (newLines[0] == "Terminate")
+            {
+                Terminate();
+            }
+
+            bool isQueued = this.DispatcherQueue.TryEnqueue(
+                Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal,
+                () =>
+                    {
+                        MyText.Text = string.Join(" ", newLines[0]);
+                    }
+                );
         }
 
     }

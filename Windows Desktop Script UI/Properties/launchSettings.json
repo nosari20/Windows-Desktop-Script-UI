@@ -5,7 +5,7 @@
     },
     "Debug Standard (unpackaged)": {
       "commandName": "Project",
-      "commandLineArgs": "--WatchPath=\"toto.txt\" --WindowTitle=\"Hello World\" --WelcomeMessage=\"Hello Folks\" -Debug"
+      "commandLineArgs": "--WatchPath=\"C:\\Users\\Florent NOSARI\\source\\repos\\Windows Desktop Script UI\\CommandFileSample.txt\" --WindowTitle=\"Hello World\" --WelcomeMessage=\"Hello Folks\" -Debug"
     },
     "Help (unpackaged)": {
       "commandName": "Project",
