@@ -1,0 +1,15 @@
+{
+  "profiles": {
+    "Windows Desktop Script UI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Debug Standard (unpackaged)": {
+      "commandName": "Project",
+      "commandLineArgs": "--WatchPath=\"toto.txt\" --WindowTitle=\"Hello World\" --WelcomeMessage=\"Hello Folks\" -Debug"
+    },
+    "Help (unpackaged)": {
+      "commandName": "Project",
+      "commandLineArgs": "-help"
+    }
+  }
+}
