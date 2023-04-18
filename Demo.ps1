@@ -9,21 +9,20 @@ if (Test-Path $FILE) {
 New-Item $FILE | Out-Null
 
 # Launch app
-$process = Start-Process -FilePath "./UI/Windows Desktop Script UI.exe" -ArgumentList "--WatchPath=`"$PSScriptRoot/$FILE`" --WindowTitle=`"Hello World!`" --WelcomeMessage=`"Hello Folks`"" -NoNewWindow
+Start-Process -FilePath "./UI/Windows Desktop Script UI.exe" -ArgumentList "--WatchPath=`"$PSScriptRoot/$FILE`" --WindowTitle=`"Hello World!`" --WelcomeMessage=`"`"" -NoNewWindow | Out-Null
 
 
 # Demo Script
-Start-Sleep -Seconds 3
-"This is a simple demo" | out-file -append $FILE
-Start-Sleep -Seconds 3
-"for my project" | out-file -append $FILE
-Start-Sleep -Seconds 3
-"You can control what is display on this window" | out-file -append $FILE
-Start-Sleep -Seconds 3
-"from a PowerShell script" | out-file -append $FILE
-Start-Sleep -Seconds 3
-"by simply writing to a file." | out-file -append $FILE
-Start-Sleep -Seconds 3
-"Thank you!" | out-file -append $FILE
-Start-Sleep -Seconds 3
-"Terminate" | out-file -append $FILE
+"MainText --Text='Hello $($env:UserName)'" | out-file -append $FILE
+"MainImage --Source='$PSScriptRoot/Windows_logo.png' --Height=200" | out-file -append $FILE
+"SubText --Text='We are setting up your device, please wait.'" | out-file -append $FILE
+"Progress --Type='Determinate' --Value=40 -ShowPercentage" | out-file -append $FILE
+
+for ($num = 1 ; $num -le 100 ; $num++)
+{
+    Start-Sleep -Milliseconds  200
+    "Progress --Type='Determinate' --Value=$num -ShowPercentage" | out-file -append $FILE
+}
+"Progress --Type='Indeterminate" | out-file -append $FILE
+"MainText --Text='Thank You!'" | out-file -append $FILE
+"SubText --Text='Your device is ready to go but needs a restart, please wait.'" | out-file -append $FILE
