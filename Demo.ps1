@@ -8,21 +8,82 @@ if (Test-Path $FILE) {
 # Create file
 New-Item $FILE | Out-Null
 
-# Launch app
-Start-Process -FilePath "./UI/Windows Desktop Script UI.exe" -ArgumentList "--WatchPath=`"$PSScriptRoot/$FILE`" --WindowTitle=`"Hello World!`" --WelcomeMessage=`"`"" -NoNewWindow | Out-Null
+function UI {
+    param(
+        [Parameter(Position=0)]
+        [string] $command
+    )
 
-
-# Demo Script
-"MainText --Text='Hello $($env:UserName)'" | out-file -append $FILE
-"MainImage --Source='$PSScriptRoot/Windows_logo.png' --Height=200" | out-file -append $FILE
-"SubText --Text='We are setting up your device, please wait.'" | out-file -append $FILE
-"Progress --Type='Determinate' --Value=40 -ShowPercentage" | out-file -append $FILE
-
-for ($num = 1 ; $num -le 100 ; $num++)
-{
-    Start-Sleep -Milliseconds  200
-    "Progress --Type='Determinate' --Value=$num -ShowPercentage" | out-file -append $FILE
+    Write-Host($command)
+    $command | out-file -append $FILE
 }
-"Progress --Type='Indeterminate" | out-file -append $FILE
-"MainText --Text='Thank You!'" | out-file -append $FILE
-"SubText --Text='Your device is ready to go but needs a restart, please wait.'" | out-file -append $FILE
+
+$global:FileChanged = $false
+function Wait-FileChange {
+    param(
+        [string]$File,
+        [string]$Action
+    )
+    $FilePath = Split-Path $File -Parent
+    $FileName = Split-Path $File -Leaf
+
+    $global:FileChanged = $false
+    $Watcher = New-Object IO.FileSystemWatcher $FilePath, $FileName -Property @{ 
+        IncludeSubdirectories = $false
+        EnableRaisingEvents = $true
+    }
+    $onChange = Register-ObjectEvent $Watcher Changed -Action {$global:FileChanged = $true}
+
+    while ($global:FileChanged -eq $false){
+        Start-Sleep -Milliseconds 100
+    }
+
+    Unregister-Event -SubscriptionId $onChange.Id
+}
+
+
+
+
+# Launch app
+Start-Process -FilePath "./UI/Windows Desktop Script UI.exe" -ArgumentList "--WatchPath=`"$PSScriptRoot/$FILE`" --WindowTitle=`"Hello World!`" --WelcomeMessage=`"`" -FullScreen -Debug" -NoNewWindow | Out-Null
+# Demo Script
+UI "MainText --Text='Hello $($env:UserName)'"
+UI "MainImage --Source='$PSScriptRoot/Windows_logo.png' --Height=200"
+UI "SubText --Text='We are setting up BitLocker to protect your data.'"
+
+$PIN = $False;
+$PINRE = $True;
+
+while ($PIN -ne $PINRE) {
+
+    UI "Progress --Type='Determinate' --Value=33 -ShowPercentage"
+
+    $INPUTFILE = "./out"
+    UI "Input --Type=Password --PlaceHolder='Florent NOSARI' --Header='Type BitLocker password' --Button=OK --Out=$INPUTFILE"
+    Wait-FileChange -File $INPUTFILE
+    $PIN = $(Get-Content -Path $INPUTFILE)
+    Remove-Item $INPUTFILE
+
+    UI "Progress --Type='Determinate' --Value=66 -ShowPercentage"
+    Start-Sleep -Seconds 1
+
+    UI "Input --Type=Password --PlaceHolder='Florent NOSARI' --Header='Retype BitLocker password' --Button=OK --Out=$INPUTFILE"
+    Wait-FileChange -File $INPUTFILE
+    $PINRE = $(Get-Content -Path $INPUTFILE)
+    Remove-Item $INPUTFILE
+    
+}
+
+
+
+UI "Progress --Type='Determinate' --Value=100 -ShowPercentage"
+UI "SubText --Text='BitLocker successfully setup.'" 
+
+Start-Sleep -Seconds 2
+
+UI "Progress --Type='Indeterminate"
+UI "MainText --Text='Thank You!'"
+UI "SubText --Text='Your device is ready to go but needs a restart, please wait.'"
+
+Start-Sleep -Seconds  3
+UI "Terminate"

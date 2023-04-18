@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using System.IO;
 
 namespace Windows_Desktop_Script_UI
 {
@@ -33,6 +34,14 @@ namespace Windows_Desktop_Script_UI
         // FileWatcher instance
         FileWatcher m_fileWatcher;
 
+        // Out file URI where user input is stored
+        const string OUTFILE_DEFAULT_URI = "C:/out";
+        string m_OutFileUri = OUTFILE_DEFAULT_URI;
+
+        // Current input
+        string m_CurrentInput;
+
+
         public MainWindow(App app, string[] cmdargs)
         {
 
@@ -42,9 +51,9 @@ namespace Windows_Desktop_Script_UI
             m_CLIArgs = new CLIArgs(cmdargs);
 
             // Show command line arguments for debug
-            #if DEBUG
-                Console.WriteLine(m_CLIArgs.showArgs());
-            #endif
+#if DEBUG
+            Console.WriteLine(m_CLIArgs.showArgs());
+#endif
 
 
             // Display help message if requested and close app
@@ -89,7 +98,7 @@ namespace Windows_Desktop_Script_UI
 
                 if (m_CLIArgs.hasFlag("Debug")) Log.Write("Settting window title to '" + windowName + "'");
 
-                ChangeWindowName(windowName);      
+                ChangeWindowName(windowName);
             }
 
             // Welcome message
@@ -111,6 +120,7 @@ namespace Windows_Desktop_Script_UI
 
                 m_fileWatcher = new FileWatcher(watchPath, m_CLIArgs.hasFlag("Debug"));
                 m_fileWatcher.NewLine += OnNewLine;
+                m_fileWatcher.StartWatching();
             }
 
         }
@@ -162,7 +172,7 @@ namespace Windows_Desktop_Script_UI
             Console.WriteLine("-h, -help                  Display this message");
         }
 
-        
+
         // New line handler
         private async void OnNewLine(object sender, IList<string> newLines)
         {
@@ -188,8 +198,8 @@ namespace Windows_Desktop_Script_UI
         private void ExecuteCommand(string commandStr)
         {
 
-            if(m_CLIArgs.hasFlag("Debug")) Log.Write("Command: \n\x1b[93m" + commandStr + "\x1b[39m");
-            
+            if (m_CLIArgs.hasFlag("Debug")) Log.Write("Command: \n\x1b[93m" + commandStr + "\x1b[39m");
+
             // Command format : <command> --<option>=<value> -<flag>
             // Exemple : MainText --Text="Hello World!"
 
@@ -198,7 +208,7 @@ namespace Windows_Desktop_Script_UI
 
             // Regex to split by space but respect quotes and double quotes
             Regex regex = new Regex("([^\\s]*'.*?'[^\\s]*|[^\\s]*\".*?\"[^\\s]*|\\S+)");
-            
+
             // Split string
             string[] substrings = regex.Split(commandStr);
 
@@ -207,11 +217,15 @@ namespace Windows_Desktop_Script_UI
 
 
             // Parse arguments
-            CLIArgs  command = new CLIArgs(commandList.ToArray<string>());
+            CLIArgs command = new CLIArgs(commandList.ToArray<string>());
 
 
-            switch(command.getCommand())
+            switch (command.getCommand())
             {
+                case "Terminate":
+                    Terminate();
+                    break;
+
                 case "MainText":
                     if (command.hasOption("Text"))
                     {
@@ -249,7 +263,8 @@ namespace Windows_Desktop_Script_UI
                 case "Progress":
                     if (command.hasOption("Type"))
                     {
-                        if(command.getOption("Type") == "Determinate" & command.hasOption("Value"))
+
+                        if (command.getOption("Type") == "Determinate" & command.hasOption("Value"))
                         {
                             Progress.IsIndeterminate = false;
                             Progress.Value = Convert.ToDouble(command.getOption("Value"));
@@ -276,12 +291,136 @@ namespace Windows_Desktop_Script_UI
                         }
                     }
                     break;
+                case "Input":
+
+                    if (command.hasFlag("Hide"))
+                    {
+                        InputPanel.Scale = new System.Numerics.Vector3(0, 0, 0);
+                        break;
+                    }
+
+
+                    if (command.hasOption("Type"))
+                    {
+                        // Hide all input
+                        foreach (UIElement el in InputPanel.Children)
+                        {
+                            el.Visibility = Visibility.Collapsed;
+                        }
+                        InputSubmit.Visibility = Visibility.Visible;
+
+
+                        if (command.hasOption("Out"))
+                        {
+                            m_OutFileUri = command.getOption("Out");
+                        }
+                        else
+                        {
+                            m_OutFileUri = OUTFILE_DEFAULT_URI;
+                        }
+
+
+                        m_CurrentInput = command.getOption("Type");
+
+                        switch (command.getOption("Type"))
+                        {
+                            case "Text":
+
+                                InputText.Text = "";
+                                InputText.Visibility = Visibility.Visible;
+                                InputPanel.Scale = new System.Numerics.Vector3(1, 1, 1);
+
+                                if (command.hasOption("PlaceHolder"))
+                                {
+                                    InputText.PlaceholderText = command.getOption("PlaceHolder");
+                                }
+                                else
+                                {
+                                    InputText.PlaceholderText = "";
+                                }
+
+                                if (command.hasOption("Header"))
+                                {
+                                    InputText.Header = command.getOption("Header");
+                                }
+                                else
+                                {
+                                    InputText.Header = "";
+                                }
+
+                                if (command.hasOption("Button"))
+                                {
+                                    InputSubmit.Content = command.getOption("Button");
+                                }
+                                else
+                                {
+                                    InputSubmit.Content = "Submit";
+                                }
+
+                                break;
+
+                            case "Password":
+                                
+                                InputPassword.Password = "";
+                                InputPassword.Visibility = Visibility.Visible;
+                                InputPanel.Scale = new System.Numerics.Vector3(1, 1, 1);
+
+                                if (command.hasOption("Header"))
+                                {
+                                    InputPassword.Header = command.getOption("Header");
+                                }
+                                else
+                                {
+                                    InputPassword.Header = "";
+                                }
+
+                                if (command.hasOption("Button"))
+                                {
+                                    InputSubmit.Content = command.getOption("Button");
+                                }
+                                else
+                                {
+                                    InputSubmit.Content = "Submit";
+                                }
+
+                                break;
+                        }
+
+                    }
+                    break;
 
             }
 
-                        
+
         }
 
+
+
+        private void OnButtonSubmit(object sender, RoutedEventArgs e)
+        {
+            string output = "";
+
+            switch (m_CurrentInput)
+            {
+                case "Text":
+                    output = InputText.Text;
+                    break;
+                case "Password":
+                    output = InputPassword.Password;
+                    break;
+
+                default:
+                    return;
+            }
+
+
+            using (StreamWriter writetext = new StreamWriter(m_OutFileUri))
+            {
+                writetext.WriteLine(output);
+            }
+            InputPanel.Scale = new System.Numerics.Vector3(0, 0, 0);
+
+        }
     }
 }
 

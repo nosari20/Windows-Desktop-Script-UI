@@ -32,8 +32,10 @@ namespace Windows_Desktop_Script_UI
         {
             m_filePath = filePath;
 
-            m_debug = debug;
+        }
 
+        public void StartWatching()
+        {
             Log.Write("Creating watcher: path=" + Path.GetDirectoryName(m_filePath) + " file=" + Path.GetFileName(m_filePath));
 
             // Creating watcher
@@ -52,6 +54,9 @@ namespace Windows_Desktop_Script_UI
             // Allow events
             m_watcher.EnableRaisingEvents = true;
 
+            // Read file
+            ReadFile();
+
         }
 
 
@@ -60,8 +65,15 @@ namespace Windows_Desktop_Script_UI
         {
 
             // Return if not of changed type
-            if (e.ChangeType != WatcherChangeTypes.Changed) return;
+            if (e.ChangeType == WatcherChangeTypes.Changed)
+            {
+                ReadFile();
+            }
+            
+        }
 
+        private void ReadFile()
+        {
             // Check if file exist
             if (File.Exists(m_filePath))
             {
@@ -78,20 +90,20 @@ namespace Windows_Desktop_Script_UI
                     while (sr.Peek() >= 0)
                     {
                         line = sr.ReadLine();
-                        
+
                         // Ignore empty lines
-                        if(line != "")
+                        if (line != "")
                         {
                             // Ignore read lines
                             if (index >= nbLines)
                             {
                                 m_Lines.Add(line);
-                                
+
                                 // Add to new lines to pass to handlers
                                 newLines.Add(line);
                             }
                             index++;
-                        }     
+                        }
                     }
                 }
 
