@@ -11,9 +11,10 @@
     mc:Ignorable="d">
 
     <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-
-        <Image Source="/Assets/Windows_logo.png" Height="100" HorizontalAlignment="Center"/>
-        <ProgressRing IsActive="True" Background="LightGray" HorizontalAlignment="Center" Margin="0,30,0,0"/>
-        <TextBlock Name="MyText" Text="Hello World!" HorizontalAlignment="Center" Margin="0,30,0,0"/>
+        <Image Name="MainImage" Height="100" HorizontalAlignment="Center"/>
+        <TextBlock Name="MainText" Text="" FontSize="20" HorizontalAlignment="Center" Margin="0,50,0,0"/>
+        <ProgressBar Name="Progress" Width="500" MinHeight="4" IsIndeterminate="True" Margin="0,50,0,0"/>
+        <TextBlock Name="ProgressText" Text="" FontSize="10" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+        <TextBlock Name="SubText" Text="" HorizontalAlignment="Center" Margin="0,50,0,0"/>
     </StackPanel>
 </Window>

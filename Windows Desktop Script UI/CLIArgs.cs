@@ -1,33 +1,48 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Windows_Desktop_Script_UI
 {
     internal class CLIArgs
     {
 
-        const string PREFIX_FLAG = "-";
-        const string PREFIX_OPTION = "--";
+        private const string PREFIX_FLAG = "-";
+        private const string PREFIX_OPTION = "--";
 
-        IDictionary<string, string> m_options = new Dictionary<string, string>();
-        IList<string> m_flags = new List<string>();
+
+        private string command = "";
+        private IDictionary<string, string> m_options = new Dictionary<string, string>();
+        private IList<string> m_flags = new List<string>();
 
         public CLIArgs(string[] cmdargs) 
         {
 
             string[] strTmp;
+            if (cmdargs.Count() == 0)
+            {
+                return;
+            }
+
+            command = cmdargs[0].TrimStart('"').TrimEnd('"').TrimStart('\'').TrimEnd('\'');
             for (int i = 1; i < cmdargs.Length; i++)
             {
 
                 if(cmdargs[i].StartsWith(PREFIX_OPTION))
                 {
                     strTmp = cmdargs[i].Replace(PREFIX_OPTION, "").Split("=");
-                    m_options.Add(strTmp[0], strTmp[1]);
+                    m_options.Add(strTmp[0], strTmp[1].TrimStart('"').TrimEnd('"').TrimStart('\'').TrimEnd('\''));
 
                 }
                 else if (cmdargs[i].StartsWith(PREFIX_FLAG)){
                     m_flags.Add(cmdargs[i].Replace(PREFIX_FLAG, ""));
                 }
             }
+        }
+
+        // return command (i.e. first item)
+        public string getCommand()
+        {
+            return command; 
         }
 
 

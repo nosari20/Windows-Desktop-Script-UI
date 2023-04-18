@@ -1,4 +1,4 @@
-Hello
-Please wait
-Please wait
-ddd
+MainText --Text="Hello Sandra"
+MainImage --Source="C:\Users\Florent NOSARI\OneDrive - Econocom\Pictures\wii.png"
+SubText --Text="We are setting up your device, please wait."
+Progress --Type="Determinate" --Value=40

@@ -8,6 +8,10 @@ using System.Xml.Linq;
 using Windows.UI.WindowManagement;
 using System.Collections.Generic;
 using Windows.UI.Core;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Windows_Desktop_Script_UI
 {
@@ -47,7 +51,7 @@ namespace Windows_Desktop_Script_UI
             if (m_CLIArgs.hasFlag("help") | m_CLIArgs.hasFlag("h") | !m_CLIArgs.hasOption("WatchPath"))
             {
 
-                Log.Write("Showing help message");
+                if (m_CLIArgs.hasFlag("Debug")) Log.Write("Showing help message");
 
                 // Show help message
                 ShowHelp();
@@ -73,7 +77,7 @@ namespace Windows_Desktop_Script_UI
             if (m_CLIArgs.hasFlag("FullScreen"))
             {
 
-                Log.Write("use Full screen");
+                if (m_CLIArgs.hasFlag("Debug")) Log.Write("use Full screen");
 
                 SetFullScreen();
             }
@@ -83,7 +87,7 @@ namespace Windows_Desktop_Script_UI
             {
                 string windowName = m_CLIArgs.getOption("WindowTitle");
 
-                Log.Write("Settting window title to '" + windowName + "'");
+                if (m_CLIArgs.hasFlag("Debug")) Log.Write("Settting window title to '" + windowName + "'");
 
                 ChangeWindowName(windowName);      
             }
@@ -93,9 +97,9 @@ namespace Windows_Desktop_Script_UI
             {
                 string welcomeMessage = m_CLIArgs.getOption("WelcomeMessage");
 
-                Log.Write("Settting welcome message to '" + welcomeMessage + "'");
+                if (m_CLIArgs.hasFlag("Debug")) Log.Write("Settting welcome message to '" + welcomeMessage + "'");
 
-                MyText.Text = string.Join(" ", welcomeMessage);
+                MainText.Text = string.Join(" ", welcomeMessage);
             }
 
             // Watch file
@@ -103,7 +107,7 @@ namespace Windows_Desktop_Script_UI
             {
                 string watchPath = m_CLIArgs.getOption("WatchPath");
 
-                Log.Write("Watching file for changes '" + watchPath + "'");
+                if (m_CLIArgs.hasFlag("Debug")) Log.Write("Watching file for changes '" + watchPath + "'");
 
                 m_fileWatcher = new FileWatcher(watchPath, m_CLIArgs.hasFlag("Debug"));
                 m_fileWatcher.NewLine += OnNewLine;
@@ -162,7 +166,6 @@ namespace Windows_Desktop_Script_UI
         // New line handler
         private async void OnNewLine(object sender, IList<string> newLines)
         {
-            Log.Write("New line detected\n\x1b[93m" + String.Join("\n", newLines) + "\x1b[39m");
 
             if (newLines[0] == "Terminate")
             {
@@ -173,9 +176,110 @@ namespace Windows_Desktop_Script_UI
                 Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal,
                 () =>
                     {
-                        MyText.Text = string.Join(" ", newLines[0]);
+                        foreach (var line in newLines)
+                        {
+                            ExecuteCommand(line);
+                        }
                     }
                 );
+        }
+
+
+        private void ExecuteCommand(string commandStr)
+        {
+
+            if(m_CLIArgs.hasFlag("Debug")) Log.Write("Command: \n\x1b[93m" + commandStr + "\x1b[39m");
+            
+            // Command format : <command> --<option>=<value> -<flag>
+            // Exemple : MainText --Text="Hello World!"
+
+            // Regex for empty or space only string
+            Regex regexSpace = new Regex("^\\s*$");
+
+            // Regex to split by space but respect quotes and double quotes
+            Regex regex = new Regex("([^\\s]*'.*?'[^\\s]*|[^\\s]*\".*?\"[^\\s]*|\\S+)");
+            
+            // Split string
+            string[] substrings = regex.Split(commandStr);
+
+            // Remove empty matches
+            IList<string> commandList = substrings.ToList().FindAll(e => regexSpace.Matches(e).Count == 0);
+
+
+            // Parse arguments
+            CLIArgs  command = new CLIArgs(commandList.ToArray<string>());
+
+
+            switch(command.getCommand())
+            {
+                case "MainText":
+                    if (command.hasOption("Text"))
+                    {
+                        MainText.Text = command.getOption("Text");
+                    }
+                    break;
+
+                case "SubText":
+                    if (command.hasOption("Text"))
+                    {
+                        SubText.Text = command.getOption("Text");
+                    }
+                    break;
+
+                case "MainImage":
+                    if (command.hasOption("Source"))
+                    {
+                        MainImage.Source = new BitmapImage(new Uri(command.getOption("Source"), UriKind.Relative));
+
+                        if (command.hasOption("Height"))
+                        {
+                            MainImage.Height = Convert.ToDouble(command.getOption("Height")); ;
+
+                        }
+
+                        if (command.hasOption("Width"))
+                        {
+                            MainImage.Width = Convert.ToDouble(command.getOption("Width")); ;
+
+                        }
+
+                    }
+                    break;
+
+                case "Progress":
+                    if (command.hasOption("Type"))
+                    {
+                        if(command.getOption("Type") == "Determinate" & command.hasOption("Value"))
+                        {
+                            Progress.IsIndeterminate = false;
+                            Progress.Value = Convert.ToDouble(command.getOption("Value"));
+                        }
+                        else
+                        {
+                            Progress.IsIndeterminate = true;
+                            ProgressText.Text = "";
+                        }
+
+                        if (command.hasOption("Height"))
+                        {
+                            Progress.MinHeight = Convert.ToDouble(command.getOption("Height"));
+                        }
+
+                        if (command.hasOption("Width"))
+                        {
+                            Progress.Width = Convert.ToDouble(command.getOption("Width"));
+                        }
+
+                        if (command.hasFlag("ShowPercentage"))
+                        {
+                            ProgressText.Text = (Progress.Value + "%");
+                        }
+                    }
+                    break;
+
+            }
+
+                        
         }
 
     }
