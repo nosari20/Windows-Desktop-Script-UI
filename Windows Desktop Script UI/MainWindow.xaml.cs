@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using System.IO;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Windows_Desktop_Script_UI
 {
@@ -121,6 +122,13 @@ namespace Windows_Desktop_Script_UI
                 m_fileWatcher = new FileWatcher(watchPath, m_CLIArgs.hasFlag("Debug"));
                 m_fileWatcher.NewLine += OnNewLine;
                 m_fileWatcher.StartWatching();
+            }
+            else
+            {
+                Console.WriteLine("Argument 'WatchPath' is missing");
+                ShowHelp();
+                Terminate();
+
             }
 
         }
@@ -359,6 +367,15 @@ namespace Windows_Desktop_Script_UI
 
                                 break;
 
+                            case "Number":
+                                InputPanel.Children.Append(new RadioButton
+                                {
+                                    Name = "TestRadioButton",
+                                    Height = 31.5,
+                                    Width = 140,
+                                });
+                                InputPanel.Scale = new System.Numerics.Vector3(1, 1, 1);
+                                break;
                             case "Password":
                                 
                                 InputPassword.Password = "";
