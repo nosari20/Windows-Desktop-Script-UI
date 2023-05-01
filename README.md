@@ -68,7 +68,7 @@ function UI {
 ```
 #### Close window 
 ```ps1
-UI "Terminate
+UI "Terminate"
 ```
 
 #### Main text 
@@ -266,7 +266,7 @@ UI "Terminate"
 - [ ] Info Bar
 - [x] Input text
 - [x] Input password
-- [ ] Input button (use submit button)
+- [x] Input button (use submit button)
 - [ ] Input combobox
 - [ ] Input toggle switch
 - [ ] Input FlipView

@@ -10,10 +10,10 @@ using System.Collections.Generic;
 using Windows.UI.Core;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Windows_Desktop_Script_UI.InputTypes;
+using Windows_Desktop_Script_UI.UserInputTypes;
 using System.IO;
-using Microsoft.UI.Xaml.Controls;
 
 namespace Windows_Desktop_Script_UI
 {
@@ -36,11 +36,12 @@ namespace Windows_Desktop_Script_UI
         FileWatcher m_fileWatcher;
 
         // Out file URI where user input is stored
-        const string OUTFILE_DEFAULT_URI = "C:/out";
-        string m_OutFileUri = OUTFILE_DEFAULT_URI;
+        readonly string OUTFILE_DEFAULT_URI = Path.GetTempPath().ToString() + "/out";
+        string m_OutFileUri;
 
         // Current input
-        string m_CurrentInput;
+        //string m_CurrentInput;
+        IUserInput m_CurrentInput;
 
 
         public MainWindow(App app, string[] cmdargs)
@@ -54,11 +55,11 @@ namespace Windows_Desktop_Script_UI
             // Show command line arguments for debug
 #if DEBUG
             Console.WriteLine(m_CLIArgs.showArgs());
+            Log.level = Log.Level.Debug;
 #endif
 
-
             // Display help message if requested and close app
-            if (m_CLIArgs.hasFlag("help") | m_CLIArgs.hasFlag("h") | !m_CLIArgs.hasOption("WatchPath"))
+            if (m_CLIArgs.hasFlag("Help") | m_CLIArgs.hasFlag("h") | !m_CLIArgs.hasOption("WatchPath"))
             {
 
                 if (m_CLIArgs.hasFlag("Debug")) Log.Write("Showing help message");
@@ -69,6 +70,12 @@ namespace Windows_Desktop_Script_UI
                 // Terminate process
                 Terminate();
             }
+            if (m_CLIArgs.hasFlag("Debug"))
+            {
+                Log.level = Log.Level.Debug;
+            }
+
+
 
 
             // Init Component
@@ -83,11 +90,22 @@ namespace Windows_Desktop_Script_UI
 
             // Handle options
 
+            
+
+            // AlwaysOnTop
+            if (m_CLIArgs.hasFlag("AlwaysOnTop"))
+            {
+
+                Log.Write("Set window to be always on top");
+
+                SetAlwaysOnTop();
+            }
+
             // FullScreen
             if (m_CLIArgs.hasFlag("FullScreen"))
             {
 
-                if (m_CLIArgs.hasFlag("Debug")) Log.Write("use Full screen");
+                Log.Write("Use full screen");
 
                 SetFullScreen();
             }
@@ -97,7 +115,7 @@ namespace Windows_Desktop_Script_UI
             {
                 string windowName = m_CLIArgs.getOption("WindowTitle");
 
-                if (m_CLIArgs.hasFlag("Debug")) Log.Write("Settting window title to '" + windowName + "'");
+                Log.Write("Settting window title to '" + windowName + "'");
 
                 ChangeWindowName(windowName);
             }
@@ -107,17 +125,30 @@ namespace Windows_Desktop_Script_UI
             {
                 string welcomeMessage = m_CLIArgs.getOption("WelcomeMessage");
 
-                if (m_CLIArgs.hasFlag("Debug")) Log.Write("Settting welcome message to '" + welcomeMessage + "'");
+                Log.Write("Settting welcome message to '" + welcomeMessage + "'");
 
                 MainText.Text = string.Join(" ", welcomeMessage);
             }
+
+
+            // Handle resize
+            Windows.Graphics.SizeInt32 windowSize = m_AppWindow.Size;
+            if (m_CLIArgs.hasOption("Height"))
+            {
+                windowSize.Height = Convert.ToInt32(m_CLIArgs.getOption("Height"));       
+            }
+            if (m_CLIArgs.hasOption("Width"))
+            {
+                windowSize.Height = Convert.ToInt32(m_CLIArgs.getOption("Width"));
+            }
+            m_AppWindow.Resize(windowSize);
 
             // Watch file
             if (m_CLIArgs.hasOption("WatchPath"))
             {
                 string watchPath = m_CLIArgs.getOption("WatchPath");
 
-                if (m_CLIArgs.hasFlag("Debug")) Log.Write("Watching file for changes '" + watchPath + "'");
+                Log.Write("Watching file for changes '" + watchPath + "'");
 
                 m_fileWatcher = new FileWatcher(watchPath, m_CLIArgs.hasFlag("Debug"));
                 m_fileWatcher.NewLine += OnNewLine;
@@ -157,12 +188,19 @@ namespace Windows_Desktop_Script_UI
         private void ChangeWindowName(string name)
         {
             m_AppWindow.Title = name;
+            
         }
 
         // Change window to full screen
         private void SetFullScreen()
         {
             m_AppWindow.SetPresenter(AppWindowPresenterKind.FullScreen);
+        }
+
+        // Set window to be always on top
+        private void SetAlwaysOnTop()
+        {
+            (m_AppWindow.Presenter as OverlappedPresenter).IsAlwaysOnTop = true;
         }
 
 
@@ -206,8 +244,6 @@ namespace Windows_Desktop_Script_UI
         private void ExecuteCommand(string commandStr)
         {
 
-            if (m_CLIArgs.hasFlag("Debug")) Log.Write("Command: \n\x1b[93m" + commandStr + "\x1b[39m");
-
             // Command format : <command> --<option>=<value> -<flag>
             // Exemple : MainText --Text="Hello World!"
 
@@ -215,7 +251,7 @@ namespace Windows_Desktop_Script_UI
             Regex regexSpace = new Regex("^\\s*$");
 
             // Regex to split by space but respect quotes and double quotes
-            Regex regex = new Regex("([^\\s]*'.*?'[^\\s]*|[^\\s]*\".*?\"[^\\s]*|\\S+)");
+            Regex regex = new Regex("(--[^\\s']*='.*?'[^\\s']*|--[^\\s\"]*=\".*?\"[^\\s\"]*|\\S+)");
 
             // Split string
             string[] substrings = regex.Split(commandStr);
@@ -223,14 +259,16 @@ namespace Windows_Desktop_Script_UI
             // Remove empty matches
             IList<string> commandList = substrings.ToList().FindAll(e => regexSpace.Matches(e).Count == 0);
 
-
+            
             // Parse arguments
             CLIArgs command = new CLIArgs(commandList.ToArray<string>());
 
+            Log.Write(command.showArgs());
 
             switch (command.getCommand())
             {
                 case "Terminate":
+                    Log.Write("Terminate");
                     Terminate();
                     break;
 
@@ -239,6 +277,9 @@ namespace Windows_Desktop_Script_UI
                     {
                         MainText.Text = command.getOption("Text");
                     }
+
+                    Log.Write("MainText : [Text: " + SubText.Text + "]");
+
                     break;
 
                 case "SubText":
@@ -246,6 +287,8 @@ namespace Windows_Desktop_Script_UI
                     {
                         SubText.Text = command.getOption("Text");
                     }
+
+                    Log.Write("SubText : [Text: " + SubText.Text + "]");
                     break;
 
                 case "MainImage":
@@ -264,6 +307,14 @@ namespace Windows_Desktop_Script_UI
                             MainImage.Width = Convert.ToDouble(command.getOption("Width")); ;
 
                         }
+
+
+                        Log.Write("MainImage : [Source: " + MainImage.Source +
+                            ", Height: " + MainImage.Height +
+                            ", Width: " + MainImage.Width +
+                            "]"
+                         );
+
 
                     }
                     break;
@@ -297,25 +348,28 @@ namespace Windows_Desktop_Script_UI
                         {
                             ProgressText.Text = (Progress.Value + "%");
                         }
+
+                        Log.Write("Progress : [IsIndeterminate: " + Progress.IsIndeterminate + 
+                            ", Value: " + Progress.Value + 
+                            ", Height: " + Progress.Height + 
+                            ", Width: " + Progress.Width +
+                            ", ProgressText: " + ProgressText.Text +
+                            "]"
+                         );
                     }
                     break;
                 case "Input":
 
                     if (command.hasFlag("Hide"))
                     {
-                        InputPanel.Scale = new System.Numerics.Vector3(0, 0, 0);
+                        FormPanel.Scale = new System.Numerics.Vector3(0, 0, 0);
                         break;
                     }
 
 
                     if (command.hasOption("Type"))
                     {
-                        // Hide all input
-                        foreach (UIElement el in InputPanel.Children)
-                        {
-                            el.Visibility = Visibility.Collapsed;
-                        }
-                        InputSubmit.Visibility = Visibility.Visible;
+                        InputPanel.Children.Clear();
 
 
                         if (command.hasOption("Out"))
@@ -327,82 +381,120 @@ namespace Windows_Desktop_Script_UI
                             m_OutFileUri = OUTFILE_DEFAULT_URI;
                         }
 
+                        if (command.hasOption("Button"))
+                        {
+                            FormSubmit.Content = command.getOption("Button");
+                        }
+                        else
+                        {
+                            FormSubmit.Content = "Submit";
+                        }
 
-                        m_CurrentInput = command.getOption("Type");
+
+                        m_CurrentInput = null;
+
 
                         switch (command.getOption("Type"))
                         {
                             case "Text":
 
-                                InputText.Text = "";
-                                InputText.Visibility = Visibility.Visible;
-                                InputPanel.Scale = new System.Numerics.Vector3(1, 1, 1);
-
-                                if (command.hasOption("PlaceHolder"))
-                                {
-                                    InputText.PlaceholderText = command.getOption("PlaceHolder");
-                                }
-                                else
-                                {
-                                    InputText.PlaceholderText = "";
-                                }
-
-                                if (command.hasOption("Header"))
-                                {
-                                    InputText.Header = command.getOption("Header");
-                                }
-                                else
-                                {
-                                    InputText.Header = "";
-                                }
-
-                                if (command.hasOption("Button"))
-                                {
-                                    InputSubmit.Content = command.getOption("Button");
-                                }
-                                else
-                                {
-                                    InputSubmit.Content = "Submit";
-                                }
-
+                                m_CurrentInput = new UserInputText(m_OutFileUri);
+                               
                                 break;
-
-                            case "Number":
-                                InputPanel.Children.Append(new RadioButton
-                                {
-                                    Name = "TestRadioButton",
-                                    Height = 31.5,
-                                    Width = 140,
-                                });
-                                InputPanel.Scale = new System.Numerics.Vector3(1, 1, 1);
-                                break;
+                            
                             case "Password":
-                                
-                                InputPassword.Password = "";
-                                InputPassword.Visibility = Visibility.Visible;
-                                InputPanel.Scale = new System.Numerics.Vector3(1, 1, 1);
 
-                                if (command.hasOption("Header"))
-                                {
-                                    InputPassword.Header = command.getOption("Header");
-                                }
-                                else
-                                {
-                                    InputPassword.Header = "";
-                                }
-
-                                if (command.hasOption("Button"))
-                                {
-                                    InputSubmit.Content = command.getOption("Button");
-                                }
-                                else
-                                {
-                                    InputSubmit.Content = "Submit";
-                                }
+                                m_CurrentInput = new UserInputPassword(m_OutFileUri);
 
                                 break;
-                        }
 
+                            case "ComboBox":
+                                m_CurrentInput = new UserInputComboBox(m_OutFileUri);
+
+                                break;
+
+                            case "ImageChooser":
+                                m_CurrentInput = new UserInputImageChooser(m_OutFileUri);
+
+                                break;
+
+                            case "Button":
+                                m_CurrentInput = new UserInputButton(m_OutFileUri);
+
+                                break;
+
+                            case "ButtonImage":
+                                m_CurrentInput = new UserInputButtonImage(m_OutFileUri);
+
+                                break;
+
+                            case "ButtonVideo":
+                                m_CurrentInput = new UserInputButtonVideo(m_OutFileUri);
+
+                                if (command.hasFlag("Autoplay"))
+                                {
+                                    ((UserInputButtonVideo) m_CurrentInput).AutoPlay = true;
+                                }
+                                if (command.hasFlag("ShowControl"))
+                                {
+                                    ((UserInputButtonVideo)m_CurrentInput).AreTransportControlsEnabled = true;
+                                }
+                                break;
+
+                            case "ButtonText":
+                                m_CurrentInput = new UserInputButtonText(m_OutFileUri);
+                             
+                                break;
+
+
+                        }
+                        if (m_CurrentInput != null)
+                        {
+
+                            if (command.hasOption("Height"))
+                            {
+                                m_CurrentInput.Height = Convert.ToDouble(command.getOption("Height"));
+                            }
+
+                            if (command.hasOption("Width"))
+                            {
+                                m_CurrentInput.Width = Convert.ToDouble(command.getOption("Width"));
+                            }
+
+                            if (command.hasOption("Header"))
+                            {
+                                m_CurrentInput.Header = command.getOption("Header");
+                            }
+
+                            if (command.hasOption("Value"))
+                            {
+                                m_CurrentInput.Value = command.getOption("Value");
+                            }
+
+                            if (command.hasOption("AllowedValues"))
+                            {
+                                m_CurrentInput.AllowedValues = command.getOption("AllowedValues");
+                            }
+
+                            if (command.hasOption("PlaceHolder"))
+                            {
+                                m_CurrentInput.PlaceHolder = command.getOption("PlaceHolder");
+                            }
+
+
+
+                            if (m_CurrentInput.GetElement() != null)
+                            {
+                                InputPanel.Children.Insert(0, m_CurrentInput.GetElement());
+                            }
+
+
+                            Log.Write("Input : " + m_CurrentInput.ToString());
+                            
+                            FormPanel.Scale = new System.Numerics.Vector3(1, 1, 1);
+
+                        }
+                        
                     }
                     break;
 
@@ -415,28 +507,8 @@ namespace Windows_Desktop_Script_UI
 
         private void OnButtonSubmit(object sender, RoutedEventArgs e)
         {
-            string output = "";
-
-            switch (m_CurrentInput)
-            {
-                case "Text":
-                    output = InputText.Text;
-                    break;
-                case "Password":
-                    output = InputPassword.Password;
-                    break;
-
-                default:
-                    return;
-            }
-
-
-            using (StreamWriter writetext = new StreamWriter(m_OutFileUri))
-            {
-                writetext.WriteLine(output);
-            }
-            InputPanel.Scale = new System.Numerics.Vector3(0, 0, 0);
-
+            m_CurrentInput.WriteOutput();
+            FormPanel.Scale = new System.Numerics.Vector3(0, 0, 0);
         }
     }
 }

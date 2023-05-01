@@ -18,7 +18,6 @@ function UI {
     $command | out-file -append $FILE
 }
 
-$global:FileChanged = $false
 function Wait-FileChange {
     param(
         [string]$File,
@@ -42,48 +41,88 @@ function Wait-FileChange {
 }
 
 
+# Define input file
+$INPUTFILE = "./out"
 
 
 # Launch app
 Start-Process -FilePath "./UI/Windows Desktop Script UI.exe" -ArgumentList "--WatchPath=`"$PSScriptRoot/$FILE`" --WindowTitle=`"Hello World!`" --WelcomeMessage=`"`" -FullScreen -Debug" -NoNewWindow | Out-Null
+
+
 # Demo Script
+
+## Startup
 UI "MainText --Text='Hello $($env:UserName)'"
 UI "MainImage --Source='$PSScriptRoot/Windows_logo.png' --Height=200"
-UI "SubText --Text='We are setting up BitLocker to protect your data.'"
+UI "Progress -Hide"
+UI "SubText --Text='Let's setting up your device.'"
+UI "Input --Type=Button --Button='Continue --Out=$INPUTFILE"
+Wait-FileChange -File $INPUTFILE
+
+
+## BitLocker
+UI "MainText --Text='BitLocker setup"
+UI "MainImage --Source='$PSScriptRoot/security.png' --Height=200"
+UI "SubText --Text='Let's setting up BitLocker to protect your data.'"
+UI "Progress --Type='Determinate' --Value=0 -ShowPercentage"
 
 $PIN = $False;
 $PINRE = $True;
-
 while ($PIN -ne $PINRE) {
 
     UI "Progress --Type='Determinate' --Value=33 -ShowPercentage"
 
-    $INPUTFILE = "./out"
-    UI "Input --Type=Password --PlaceHolder='Florent NOSARI' --Header='Type BitLocker password' --Button=OK --Out=$INPUTFILE"
+    UI "Input --Type=Password --Header='Type BitLocker password' --Button=Continue --Out=$INPUTFILE"
     Wait-FileChange -File $INPUTFILE
     $PIN = $(Get-Content -Path $INPUTFILE)
     Remove-Item $INPUTFILE
 
     UI "Progress --Type='Determinate' --Value=66 -ShowPercentage"
-    Start-Sleep -Seconds 1
+    Start-Sleep -Milliseconds 500 
 
-    UI "Input --Type=Password --PlaceHolder='Florent NOSARI' --Header='Retype BitLocker password' --Button=OK --Out=$INPUTFILE"
+    UI "Input --Type=Password --Header='Retype BitLocker password' --Button='Set PIN' --Out=$INPUTFILE"
     Wait-FileChange -File $INPUTFILE
     $PINRE = $(Get-Content -Path $INPUTFILE)
     Remove-Item $INPUTFILE
-    
 }
 
 
+### Use the following code to setup BitLocker
+###
+### $BLV = Get-BitlockerVolume -MountPoint "C:"
+### $TpmPinKeyProtector = $BLV.KeyProtector | Where-Object {$PSItem.KeyProtectorType -eq "TpmPin"}
+### Remove-BitLockerKeyProtector -MountPoint "C:" -KeyProtectorId $TpmPinKeyProtector.KeyProtectorId
+### Add-BitLockerKeyProtector -MountPoint $env:SystemDrive -Pin $(ConvertTo-SecureString $PIN -AsPlainText -Force) -TpmAndPinProtector
 
 UI "Progress --Type='Determinate' --Value=100 -ShowPercentage"
 UI "SubText --Text='BitLocker successfully setup.'" 
 
-Start-Sleep -Seconds 2
+Start-Sleep -Seconds 1
 
-UI "Progress --Type='Indeterminate"
-UI "MainText --Text='Thank You!'"
+
+
+## Choose Theme
+UI "MainText --Text='Personalization"
+UI "MainImage --Source='$PSScriptRoot/personalization.png' --Height=200"
+UI "SubText --Text='Choose prefered theme'" 
+UI "Progress -Hide"
+
+UI "Input --Type=ImageChooser --Header='Select theme' --Value='$PSScriptRoot/WinDark.png|$PSScriptRoot/WinLight.jpg' --Button=Save --Out=$INPUTFILE"
+Wait-FileChange -File $INPUTFILE
+$THEME = $(Get-Content -Path $INPUTFILE)
+Remove-Item $INPUTFILE
+
+
+### Use the following code to setup theme
+###
+
+
+
+## Reboot
+UI "MainText --Text='Finalization"
+UI "MainImage --Source='$PSScriptRoot/restart.png' --Height=200"
 UI "SubText --Text='Your device is ready to go but needs a restart, please wait.'"
+UI "Progress --Type=Indeterminate"
 
 Start-Sleep -Seconds  3
 UI "Terminate"

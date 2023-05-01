@@ -29,7 +29,7 @@ namespace Windows_Desktop_Script_UI
 
                 if(cmdargs[i].StartsWith(PREFIX_OPTION))
                 {
-                    strTmp = cmdargs[i].Replace(PREFIX_OPTION, "").Split("=");
+                    strTmp = cmdargs[i].Replace(PREFIX_OPTION, "").Split(new[] { '=' }, 2);
                     m_options.Add(strTmp[0], strTmp[1].TrimStart('"').TrimEnd('"').TrimStart('\'').TrimEnd('\''));
 
                 }
@@ -68,7 +68,7 @@ namespace Windows_Desktop_Script_UI
         public string showArgs()
         {
 
-            string output = "";
+            string output = "Command: " + command + "\n";
 
             output += "Flags:\n";
             foreach (string arg in m_flags) { 

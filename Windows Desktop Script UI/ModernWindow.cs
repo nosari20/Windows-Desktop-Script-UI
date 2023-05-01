@@ -39,7 +39,7 @@ namespace Windows_Desktop_Script_UI
                 titleBar.ExtendsContentIntoTitleBar = true;
                 titleBar.ButtonBackgroundColor = Colors.Transparent;
                 titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-                m_AppWindow.Title = "Test";
+                m_AppWindow.Title = "App";
                 return true;
             }
             else

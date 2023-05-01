@@ -16,9 +16,6 @@ namespace Windows_Desktop_Script_UI
         // FileSystemWatcher instance 
         private FileSystemWatcher m_watcher;
 
-        // Debug mode
-        private bool m_debug;
-
         // Lines already read
         private IList<string> m_Lines = new List<string>();
 

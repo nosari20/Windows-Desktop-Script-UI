@@ -10,20 +10,44 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Image Name="MainImage" Height="100" HorizontalAlignment="Center"/>
-        <TextBlock Name="MainText" Text="" FontSize="20" HorizontalAlignment="Center" Margin="0,50,0,0"/>
-        <StackPanel Name="InputPanel" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center"  Scale="0,0,0">
-            <StackPanel.ScaleTransition>
-                <Vector3Transition />
-            </StackPanel.ScaleTransition>
+    <!-- <StackPanel Orientation="Vertical"> -->
 
-            <TextBox Name="InputText" Width="300" Margin="0,50,0,0" HorizontalAlignment="Center"/>
-            <PasswordBox Name="InputPassword" Width="300" Margin="0,50,0,0" HorizontalAlignment="Center"/>
-            <Button Name="InputSubmit" Content="Submit" Margin="0,20,0,0" HorizontalAlignment="Center" Click="OnButtonSubmit"/>
+    <!-- Main Grid -->
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Main Panel -->
+        <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top">
+
+            <Image Name="MainImage" Height="100" Margin="0,20,0,0" HorizontalAlignment="Center"/>
+
+            <TextBlock Name="MainText" Text="" FontSize="20" Margin="0,10,0,0" HorizontalAlignment="Center"/>
+            
+            <!-- Form Panel -->
+            <StackPanel Name="FormPanel" Orientation="Vertical" MinHeight="400" Scale="0,0,0">
+                <StackPanel.ScaleTransition>
+                    <Vector3Transition />
+                </StackPanel.ScaleTransition>
+
+                <!-- Pannel where input element will be added -->
+                <StackPanel Name="InputPanel" Orientation="Vertical" Margin="0,50,0,0"></StackPanel>
+
+                <!-- Form submit button -->
+                <Button Name="FormSubmit" Content="Submit" Margin="0,20,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Click="OnButtonSubmit"/>
+            </StackPanel>
+
         </StackPanel>
-        <ProgressBar Name="Progress" Width="500" MinHeight="4" IsIndeterminate="True" Margin="0,50,0,0" HorizontalAlignment="Center"/>
-        <TextBlock Name="ProgressText" Text="" FontSize="10" HorizontalAlignment="Center" Margin="0,5,0,0"/>
-        <TextBlock Name="SubText" Text="" HorizontalAlignment="Center" Margin="0,50,0,0" />
-    </StackPanel>
+        
+        <!-- Progress Panel -->
+        <StackPanel  Grid.Row="1"  HorizontalAlignment="Center">
+            <ProgressBar Name="Progress" Width="500" MinHeight="4" IsIndeterminate="True" Margin="0,50,0,0"/>
+            <TextBlock Name="ProgressText" Text="" FontSize="10" Margin="0,5,0,0" HorizontalAlignment="Center"/>
+            <TextBlock Name="SubText" Text="" Margin="0,40,0,40" HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+
+    <!-- </StackPanel> -->
 </Window>

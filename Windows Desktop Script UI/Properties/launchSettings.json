@@ -5,7 +5,7 @@
     },
     "Debug Standard (unpackaged)": {
       "commandName": "Project",
-      "commandLineArgs": "--WatchPath=\"C:\\Users\\Florent NOSARI\\OneDrive - Econocom\\Desktop\\input\" --WindowTitle=\"Hello World\" --WelcomeMessage=\"Hello Folks\" -Debug"
+      "commandLineArgs": "--WatchPath=\"C:\\Users\\Florent NOSARI\\OneDrive - Econocom\\Desktop\\Demo 2\\demo.txt\" --WindowTitle=\"Hello World\" --WelcomeMessage=\"Hello Folks\" -Debug --Height=1000"
     },
     "Help (unpackaged)": {
       "commandName": "Project",
