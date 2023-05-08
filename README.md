@@ -1,6 +1,19 @@
 # Windows Desktop Script UI
 
-![Alt text](/Screenshot.png?raw=true "Title")
+[![License MIT](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/)
+[![Version alpha](https://img.shields.io/badge/version-alpha-green)](https://opensource.org/licenses/)
+
+![Visual Studio](https://img.shields.io/badge/Visual%20Studio-5C2D91.svg?style=for-the-badge&logo=visual-studio&logoColor=white)
+![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+![C#](https://img.shields.io/badge/c%23-%23239120.svg?style=for-the-badge&logo=c-sharp&logoColor=white)
+![.Net](https://img.shields.io/badge/.NET-5C2D91?style=for-the-badge&logo=.net&logoColor=white)
+![Windows App SDK](https://img.shields.io/badge/Windows%20App%20SDK-0078D6?style=for-the-badge&logo=windows&logoColor=white)
+
+![Screenshot](/Screenshot.png)
+
+[Full demo video here](/Demo.mp4)
+
+Latest release and demo code available [here](https://github.com/nosari20/Windows-Desktop-Script-UI/releases)
 
 
 # Presentation
@@ -33,15 +46,16 @@ Start-Process -FilePath "./Windows Desktop Script UI.exe" -ArgumentList "--Watch
 * `--WindowTitle`    : title of widow (optional)
 * `--WelcomeMessage` : main text (optional)
 * `-FullScreen`      : fullscreen flag (optional)
+* `-AlwaysOnTop`     : always on top flag (optional)
 * `-Debug`           : debug flag (optional)
 
 
-Note: if you are running in system context you must launche it in user context (with [KelvinTegelaar/RunAsUser](https://github.com/KelvinTegelaar/RunAsUser) or [Microsoft deployment toolkit](https://www.microsoft.com/en-us/download/details.aspx?id=54259) ServiceUI.exe for example)
+Note: if you are running in system context you must launch it in user context (with [KelvinTegelaar/RunAsUser](https://github.com/KelvinTegelaar/RunAsUser) or [Microsoft deployment toolkit](https://www.microsoft.com/en-us/download/details.aspx?id=54259) ServiceUI.exe for example)
 
 
 ### Manipulate UI
 
-The app listen to command written in file, you just have to write your own system to write to file command file.
+The app listen to commands written in a file, you just have to write your own function to write to the command file.
 
 ```ps1
 # Define file path
@@ -98,19 +112,24 @@ UI "Progress --Type='Determinate' --Value=33 -ShowPercentage"
 * `--Type`           : image source (Determinate or Indeterminate)
 * `--Value`          : value between 0 and 100 (required for Determinate mode)
 * `-ShowPercentage`  : show percentage under progressbar (optional)
+* `-Hide`            : hide progressbar (optional)
 
 #### Input
 ```ps1
    UI "Input --Type=Password --PlaceHolder='Florent NOSARI' --Header='Type BitLocker password' --Button=OK --Out=input.txt"
 ```
-* `--Type`        : input type (see details below)
-* `--PlaceHolder` : placeholder for supported type (optional)
-* `--Header`      : header (optional)
-* `--Button`      : submit button text (optional)
-* `--Out`         : file path where user input is store after submit (optional)
+* `--Type`           : input type (see details below)
+* `--PlaceHolder`    : placeholder for supported types (optional)
+* `--Value`          : default value for supported types(optional)
+* `--AllwowedValues` : allowed values for supported types (optional)
+* `--Header`         : header for supported types (optional)
+* `--Button`         : submit button text (optional)
+* `--Out`            : file path where user input is store after submit (optional)
+* `--Height`         : input height (optional)
+* `--Width`          : input width (optional)
 
 
-User input is stored in a file, you have to wait for file change before continuig you script, here is a short example.
+User input is stored in a file (file is empty if value is not provided on input is simple button), you have to wait for file change before continuig you script, here is a short example.
 
 ```ps1
 ## Function towait for file change
@@ -155,11 +174,69 @@ Remove-Item $INPUTFILE
 
 The following input types are supported:
 
-| Type          | Description         | WINUI 3 Object     | Supported options |
-|---------------|---------------------|--------------------|-------------------|
-| `Text`        | Basic text field    | `TextBox`          | PlaceHolder       |
-| `Password`    | Password text field | `PasswordBox`      |                   |
+| Type          | Description                          | WINUI 3 Object      | Supported options                                                                 |
+|---------------|--------------------------------------|---------------------|-----------------------------------------------------------------------------------|
+| `Text`        | Basic text field                     | `TextBox`           | Header<br>PlaceHolder<br>Value                                                    |
+| `Password`    | Password text field                  | `PasswordBox`       | Header<br>                                                                        |
+| `ComboBox`    | Predefined value selector            | `ComboBox`          | Header<br>AllowedValues (separated by "\|")<br>Value (represent the default value)|
+| `ImageChooser`| Grid with images as available values | `GridView`          | Header<br>AllowedValues (separated by "\|")                                       |
+| `ButtonImage` | Button with image to display         | `Image`             |                                                                                   |
+| `ButtonVideo` | Button with video                    | `MediaPlayerElement`|                                                                                   |
+| `ButtonText`  | Button with rich text                | `RichTextBlock`     | Autoplay<br>ShowControl                                                           |
 
+
+```ps1
+# Text
+UI "Input --Type=Text --Header='Enter value' --Button=OK --Out=$INPUTFILE"
+
+# Password
+UI "Input --Type=Password --Header='Enter password' --Button=OK --Out=$INPUTFILE"
+
+# ComboBox
+UI "Input --Type=ComboBox --Header='Select option' --AllowedValues='One|Two|Three' --Value='Two' --Button=OK --Out=$INPUTFILE"
+
+# ImageChooser
+UI "Input --Type=ImageChooser --Header='Select option' --AllowedValues='$PSScriptRoot/One.png|$PSScriptRoot/Two.png|$PSScriptRoot/Three.png' --Button=OK --Out=$INPUTFILE"
+
+# ButtonImage
+UI "Input --Type=ButtonImage --Value='$PSScriptRoot/Image.png' --Button='Next' --Out=$INPUTFILE"
+
+# ButtonVideo
+UI "Input --Type=ButtonImage --Value='$PSScriptRoot/Video.mp4' --Button='Next' --Out=$INPUTFILE"
+
+# ButtonText
+$content="<Paragraph>Lorem ipsum dolor sit amet.</Paragraph>" # be aware of " and ' interpretation
+UI "Input --Type=ButtonImage --Value='$content' --Button='Accept' --Out=$INPUTFILE"
+
+```
+
+ButtonText value must be valid XAML wich can be included in `RichTextBlock` ([See documentation](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.richtextblock?view=windows-app-sdk-1.3)). Find an example below:
+
+```xml
+<Paragraph TextAlignment="Center">
+    <InlineUIContainer>
+        <Image 
+            Source="C:\temp\contoso.png"
+            Width="100"/>
+    </InlineUIContainer>
+</Paragraph>
+<Paragraph>
+    Lorem ipsum dolor sit amet, consectetur
+    adipiscing elit. Duis sit amet nisi eget ex gravida molestie. Nulla varius leo at nulla
+    molestie, sit amet ultricies nisi efficitur. Proin non massa eros. Fusce convallis maximus risus
+    ac aliquam. Fusce non tempus orci, at dignissim velit. Nulla at sollicitudin arcu. Proin arcu
+    mi, gravida at suscipit a, gravida eu lorem. Nulla commodo, mi sit amet tincidunt pharetra,
+    justo ipsum malesuada mi, eget malesuada est elit at ipsum.
+</Paragraph>
+<Paragraph>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sit amet nisi eget ex
+    gravida molestie. Nulla varius leo at nulla molestie, sit amet ultricies nisi efficitur. Proin
+    non massa eros. Fusce convallis maximus risus ac aliquam. Fusce non tempus orci, at dignissim
+    velit. Nulla at sollicitudin arcu. Proin arcu mi, gravida at suscipit a, gravida eu lorem. Nulla
+    commodo, mi sit amet tincidunt pharetra, justo ipsum malesuada mi, eget malesuada est elit at
+    ipsum.
+</Paragraph>
+```
 
 ## Sample code
 
@@ -206,47 +283,37 @@ function Wait-FileChange {
     Unregister-Event -SubscriptionId $onChange.Id
 }
 
+# Define input file
+$INPUTFILE = "$PSScriptRoot/out"
+
+
+
+################################################################################
+############################### UI Launch ######################################
+################################################################################
 
 # Launch app
-Start-Process -FilePath "./UI/Windows Desktop Script UI.exe" -ArgumentList "--WatchPath=`"$PSScriptRoot/$FILE`" --WindowTitle=`"Hello World!`" --WelcomeMessage=`"`" -FullScreen -Debug" -NoNewWindow | Out-Null
-# Demo Script
-UI "MainText --Text='Hello $($env:UserName)'"
-UI "MainImage --Source='$PSScriptRoot/Windows_logo.png' --Height=200"
-UI "SubText --Text='We are setting up BitLocker to protect your data.'"
-
-$PIN = $False;
-$PINRE = $True;
-
-while ($PIN -ne $PINRE) {
-
-    UI "Progress --Type='Determinate' --Value=33 -ShowPercentage"
-
-    $INPUTFILE = "./out"
-    UI "Input --Type=Password --PlaceHolder='Florent NOSARI' --Header='Type BitLocker password' --Button=OK --Out=$INPUTFILE"
-    Wait-FileChange -File $INPUTFILE
-    $PIN = $(Get-Content -Path $INPUTFILE)
-    Remove-Item $INPUTFILE
-
-    UI "Progress --Type='Determinate' --Value=66 -ShowPercentage"
-    Start-Sleep -Seconds 1
-
-    UI "Input --Type=Password --PlaceHolder='Florent NOSARI' --Header='Retype BitLocker password' --Button=OK --Out=$INPUTFILE"
-    Wait-FileChange -File $INPUTFILE
-    $PINRE = $(Get-Content -Path $INPUTFILE)
-    Remove-Item $INPUTFILE
-    
-}
+Start-Process -FilePath "./UI/Windows Desktop Script UI.exe" -ArgumentList "--WatchPath=`"$PSScriptRoot/$FILE`" --WindowTitle=`"Hello World!`" --WelcomeMessage=`"`" -AlwaysOnTop -FullScreen -Debug" -NoNewWindow | Out-Null
 
 
+################################################################################
+############################### Startup UI #####################################
+################################################################################
 
-UI "Progress --Type='Determinate' --Value=100 -ShowPercentage"
-UI "SubText --Text='BitLocker successfully setup.'" 
+UI "MainText --Text=`"Hello $($env:UserName)`""
+UI "MainImage --Source=`"$PSScriptRoot/windows.png`" --Height=150"
+UI "Progress -Hide"
+UI "SubText --Text=`"Welcome to Windows, let's setup your device.`""
+UI "Input --Type=ButtonVideo --Value=`"$PSScriptRoot/Windows11.mp4`" --Button=`"Continue`" --Height=300 --Width=500 -Autoplay --Out=`"$INPUTFILE`""
+Wait-FileChange -File $INPUTFILE
 
-Start-Sleep -Seconds 2
-
-UI "Progress --Type='Indeterminate"
-UI "MainText --Text='Thank You!'"
-UI "SubText --Text='Your device is ready to go but needs a restart, please wait.'"
+################################################################################
+############################### Reboot #########################################
+################################################################################
+UI "MainText --Text=`"Finalization"
+UI "MainImage --Source=`"$PSScriptRoot/restart.png`" --Height=150"
+UI "SubText --Text=`"Your device is ready to go but needs a restart, please wait.`""
+UI "Progress --Type=Indeterminate"
 
 Start-Sleep -Seconds  3
 UI "Terminate"
@@ -263,13 +330,20 @@ UI "Terminate"
 - [x] ProgressBar inderterminate
 - [x] ProgressBar derterminate
 - [x] ProgressBar derterminate percentage
+- [x] ProgressBar hide
 - [ ] Info Bar
 - [x] Input text
 - [x] Input password
 - [x] Input button (use submit button)
-- [ ] Input combobox
+- [x] Input combobox
+- [x] Input image chooser
+- [x] Input text
+- [x] Input image
+- [x] Input video
 - [ ] Input toggle switch
 - [ ] Input FlipView
+- [ ] Input WebView
+- [ ] Input FilePicker
 
 ## Scenarios ideas
 
@@ -277,7 +351,7 @@ UI "Terminate"
 - Dark/light mode chooser
 - Prefered wallpaper
 - Theme color
-- Appliction installation (if user input is needed)
+- Application installation (if user input is needed)
 
 
 ## Contribute

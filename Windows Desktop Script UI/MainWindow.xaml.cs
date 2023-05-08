@@ -214,6 +214,7 @@ namespace Windows_Desktop_Script_UI
             Console.WriteLine("--WindowTitle=<NAME>       Set Window name");
             Console.WriteLine("--WelcomeMessage=<MESSAGE> Set Window name");
             Console.WriteLine("-FullScreen                Set Window full screen");
+            Console.WriteLine("-AlwaysOnTop               Set Window full screen");
             Console.WriteLine("-Debug                     Set Window full screen");
             Console.WriteLine("-h, -help                  Display this message");
         }
