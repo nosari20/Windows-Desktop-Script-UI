@@ -48,6 +48,8 @@ Start-Process -FilePath "./Windows Desktop Script UI.exe" -ArgumentList "--Watch
 * `--WatchPath`      : path of command file
 * `--WindowTitle`    : title of widow (optional)
 * `--WelcomeMessage` : main text (optional)
+* `--Height`         : window height (optional)
+* `--Width`          : window width (optional)
 * `-FullScreen`      : fullscreen flag (optional)
 * `-AlwaysOnTop`     : always on top flag (optional)
 * `-Debug`           : debug flag (optional)
@@ -138,23 +140,27 @@ User input is stored in a file (file is empty if value is not provided on input 
 ## Function towait for file change
 function Wait-FileChange {
     param(
-        [string]$File,
+        [string]$File
     )
     $FilePath = Split-Path $File -Parent
     $FileName = Split-Path $File -Leaf
 
     $global:FileChanged = $false
+
     $Watcher = New-Object IO.FileSystemWatcher $FilePath, $FileName -Property @{ 
         IncludeSubdirectories = $false
         EnableRaisingEvents = $true
     }
-    $onChange = Register-ObjectEvent $Watcher Changed -Action {$global:FileChanged = $true}
+    
+    Unregister-Event -SourceIdentifier "filechanged" -ErrorAction SilentlyContinue
+
+    Register-ObjectEvent $Watcher Changed -Action {$global:FileChanged = $true} -SourceIdentifier "filechanged" | Out-Null
 
     while ($global:FileChanged -eq $false){
         Start-Sleep -Milliseconds 100
     }
 
-    Unregister-Event -SubscriptionId $onChange.Id
+    Unregister-Event -SourceIdentifier "filechanged"
 }
 
 ....
@@ -266,24 +272,27 @@ function UI {
 
 function Wait-FileChange {
     param(
-        [string]$File,
-        [string]$Action
+        [string]$File
     )
     $FilePath = Split-Path $File -Parent
     $FileName = Split-Path $File -Leaf
 
     $global:FileChanged = $false
+
     $Watcher = New-Object IO.FileSystemWatcher $FilePath, $FileName -Property @{ 
         IncludeSubdirectories = $false
         EnableRaisingEvents = $true
     }
-    $onChange = Register-ObjectEvent $Watcher Changed -Action {$global:FileChanged = $true}
+    
+    Unregister-Event -SourceIdentifier "filechanged" -ErrorAction SilentlyContinue
+
+    Register-ObjectEvent $Watcher Changed -Action {$global:FileChanged = $true} -SourceIdentifier "filechanged" | Out-Null
 
     while ($global:FileChanged -eq $false){
         Start-Sleep -Milliseconds 100
     }
 
-    Unregister-Event -SubscriptionId $onChange.Id
+    Unregister-Event -SourceIdentifier "filechanged"
 }
 
 # Define input file
