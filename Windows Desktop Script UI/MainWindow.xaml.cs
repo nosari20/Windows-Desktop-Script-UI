@@ -139,7 +139,7 @@ namespace Windows_Desktop_Script_UI
             }
             if (m_CLIArgs.hasOption("Width"))
             {
-                windowSize.Height = Convert.ToInt32(m_CLIArgs.getOption("Width"));
+                windowSize.Width = Convert.ToInt32(m_CLIArgs.getOption("Width"));
             }
             m_AppWindow.Resize(windowSize);
 
