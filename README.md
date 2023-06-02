@@ -22,6 +22,7 @@ This project aims to offer easy to use and modern UI for Windows desktop devices
 
 Samples:
 * [Onboarding screen](https://github.com/nosari20/Windows-Desktop-Script-UI/tree/master/samples/Onboarding)
+* [BitLocker PIN](https://github.com/nosari20/Windows-Desktop-Script-UI/tree/master/samples/BitLockerPIN)
 
 
 ## Tech
