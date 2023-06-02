@@ -20,6 +20,9 @@ Latest release and demo code available [here](https://github.com/nosari20/Window
 
 This project aims to offer easy to use and modern UI for Windows desktop devices during setup. You can use it from PowerShell scripts by writing commands in a file wich is watched by the app.
 
+Samples:
+* [Onboarding screen](https://github.com/nosari20/Windows-Desktop-Script-UI/tree/master/samples/Onboarding)
+
 
 ## Tech
 
