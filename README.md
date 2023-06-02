@@ -1,7 +1,7 @@
 # Windows Desktop Script UI
 
-[![License MIT](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/licenses/)
-[![Version alpha](https://img.shields.io/badge/version-alpha-green)](https://opensource.org/licenses/)
+[![License MIT](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/license/mit/)
+[![Version alpha](https://img.shields.io/badge/version-alpha-green)](https://github.com/nosari20/Windows-Desktop-Script-UI/releases)
 
 ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-5C2D91.svg?style=for-the-badge&logo=visual-studio&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
