@@ -1,0 +1,23 @@
+<Paragraph TextAlignment='Center'>
+    <InlineUIContainer>
+        <Image 
+            Source='C:\Users\Florent NOSARI\OneDrive - Econocom\Desktop\Demo 2\contoso.png'
+            Width='100'/>
+    </InlineUIContainer>
+</Paragraph>
+<Paragraph>
+    Lorem ipsum dolor sit amet, consectetur
+    adipiscing elit. Duis sit amet nisi eget ex gravida molestie. Nulla varius leo at nulla
+    molestie, sit amet ultricies nisi efficitur. Proin non massa eros. Fusce convallis maximus risus
+    ac aliquam. Fusce non tempus orci, at dignissim velit. Nulla at sollicitudin arcu. Proin arcu
+    mi, gravida at suscipit a, gravida eu lorem. Nulla commodo, mi sit amet tincidunt pharetra,
+    justo ipsum malesuada mi, eget malesuada est elit at ipsum.
+</Paragraph>
+<Paragraph>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sit amet nisi eget ex
+    gravida molestie. Nulla varius leo at nulla molestie, sit amet ultricies nisi efficitur. Proin
+    non massa eros. Fusce convallis maximus risus ac aliquam. Fusce non tempus orci, at dignissim
+    velit. Nulla at sollicitudin arcu. Proin arcu mi, gravida at suscipit a, gravida eu lorem. Nulla
+    commodo, mi sit amet tincidunt pharetra, justo ipsum malesuada mi, eget malesuada est elit at
+    ipsum.
+</Paragraph>
