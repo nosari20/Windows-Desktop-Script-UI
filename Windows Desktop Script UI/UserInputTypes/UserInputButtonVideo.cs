@@ -15,6 +15,8 @@ namespace Windows_Desktop_Script_UI.UserInputTypes
 
         public bool AreTransportControlsEnabled = false;
         public bool AutoPlay = false;
+        public bool IsMuted = true;
+
 
 
         public UserInputButtonVideo(string fileUri) : base(fileUri)
@@ -28,6 +30,7 @@ namespace Windows_Desktop_Script_UI.UserInputTypes
             m_element = new MediaPlayerElement();
             m_element.Source = MediaSource.CreateFromUri(new Uri(Value, UriKind.Relative));
             m_element.AreTransportControlsEnabled = AreTransportControlsEnabled;
+            m_element.MediaPlayer.IsMuted = IsMuted;
             m_element.AutoPlay = AutoPlay;
             if (Height > 0) m_element.MaxHeight = Height;
             if (Width > 0) m_element.MaxWidth = Width;
@@ -44,5 +47,6 @@ namespace Windows_Desktop_Script_UI.UserInputTypes
         {
             return "";
         }
+
     }
 }

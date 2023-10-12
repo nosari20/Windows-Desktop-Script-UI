@@ -11,33 +11,27 @@ namespace Windows_Desktop_Script_UI.UserInputTypes
     internal class UserInputButtonText : IUserInput
     {
 
-        private ScrollViewer m_element;
+        private RichTextBlock m_element;
 
 
         public UserInputButtonText(string fileUri) : base(fileUri)
         {
-            Height = 250;
         }
 
         public override UIElement GetElement()
         {
 
             string TemplateXAML = string.Format(@"
-                        <ScrollViewer
+                        <RichTextBlock
                             xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'
-                            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'
-                            Height='{1}'>
-                                <RichTextBlock>
+                            xmlns:x='http://schemas.microsoft.com/winfx/2006/xaml'>
                                         {0}  
-                                </RichTextBlock>
-                        </ScrollViewer>
-                    ", Value,Height);
+                        </RichTextBlock>
+                    ", Value);
 
             try
             {
-                m_element = (ScrollViewer)XamlReader.Load(TemplateXAML);
-                if (Height > 0) m_element.Height = Height;
-                if (Width > 0) m_element.Width = Width;
+                m_element = (RichTextBlock)XamlReader.Load(TemplateXAML);
             }
             catch (Microsoft.UI.Xaml.Markup.XamlParseException e)
             {

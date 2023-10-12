@@ -1,7 +1,7 @@
 # Windows Desktop Script UI
 
 [![License MIT](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/license/mit/)
-[![Version alpha](https://img.shields.io/badge/version-alpha-green)](https://github.com/nosari20/Windows-Desktop-Script-UI/releases)
+[![Version alpha](https://img.shields.io/badge/version-rc1-green)](https://github.com/nosari20/Windows-Desktop-Script-UI/releases)
 
 ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-5C2D91.svg?style=for-the-badge&logo=visual-studio&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
@@ -22,14 +22,14 @@ This project aims to offer easy to use and modern UI for Windows desktop devices
 
 Samples:
 * [Onboarding screen](https://github.com/nosari20/Windows-Desktop-Script-UI/tree/master/samples/Onboarding)
-* [BitLocker PIN](https://github.com/nosari20/Windows-Desktop-Script-UI/tree/master/samples/BitLockerPIN)
-
+* [Bitlocker PIN setup](https://github.com/nosari20/Windows-Desktop-Script-UI/tree/master/samples/BitLockerPIN)
 
 ## Tech
 
 This project is developped with the following libraries:
 * Windows App SDK
 * WinUI 3
+* .NET 6
 
 
 ## Prerequisites
@@ -113,12 +113,10 @@ UI "MainImage --Source='$PSScriptRoot/Windows_logo.png' --Height=200 -Width=200"
 
 #### Progress
 ```ps1
-UI "Progress --Type='Determinate' --Value=33 -ShowPercentage"
+UI "Load --Text='Please wait..'"
 ```
-* `--Type`           : image source (Determinate or Indeterminate)
-* `--Value`          : value between 0 and 100 (required for Determinate mode)
-* `-ShowPercentage`  : show percentage under progressbar (optional)
-* `-Hide`            : hide progressbar (optional)
+* `--Text`           : text behind progresss ring (optional, use \n for line break)
+* `-Hide`            : hide progress ring (optional)
 
 #### Input
 ```ps1
@@ -191,8 +189,8 @@ The following input types are supported:
 | `ComboBox`    | Predefined value selector            | `ComboBox`          | Header<br>AllowedValues (separated by "\|")<br>Value (represent the default value)|
 | `ImageChooser`| Grid with images as available values | `GridView`          | Header<br>AllowedValues (separated by "\|")                                       |
 | `ButtonImage` | Button with image to display         | `Image`             |                                                                                   |
-| `ButtonVideo` | Button with video                    | `MediaPlayerElement`|                                                                                   |
-| `ButtonText`  | Button with rich text                | `RichTextBlock`     | Autoplay<br>ShowControl                                                           |
+| `ButtonVideo` | Button with video                    | `MediaPlayerElement`| Autoplay<br>ShowControl<br>SoundOn                                                |
+| `ButtonText`  | Button with rich text                | `RichTextBlock`     |                                                                                   |
 
 
 ```ps1
@@ -315,7 +313,6 @@ Start-Process -FilePath "./UI/Windows Desktop Script UI.exe" -ArgumentList "--Wa
 
 UI "MainText --Text=`"Hello $($env:UserName)`""
 UI "MainImage --Source=`"$PSScriptRoot/windows.png`" --Height=150"
-UI "Progress -Hide"
 UI "SubText --Text=`"Welcome to Windows, let's setup your device.`""
 UI "Input --Type=ButtonVideo --Value=`"$PSScriptRoot/Windows11.mp4`" --Button=`"Continue`" --Height=300 --Width=500 -Autoplay --Out=`"$INPUTFILE`""
 Wait-FileChange -File $INPUTFILE
@@ -326,7 +323,7 @@ Wait-FileChange -File $INPUTFILE
 UI "MainText --Text=`"Finalization"
 UI "MainImage --Source=`"$PSScriptRoot/restart.png`" --Height=150"
 UI "SubText --Text=`"Your device is ready to go but needs a restart, please wait.`""
-UI "Progress --Type=Indeterminate"
+UI "Load --Type='Waiting for reboot...'"
 
 Start-Sleep -Seconds  3
 UI "Terminate"

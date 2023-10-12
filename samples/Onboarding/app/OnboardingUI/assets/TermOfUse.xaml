@@ -1,23 +1,40 @@
 <Paragraph TextAlignment='Center'>
     <InlineUIContainer>
         <Image 
-            Source='C:\Users\Florent NOSARI\OneDrive - Econocom\Desktop\Demo 2\contoso.png'
+            Source='$PSScriptRoot\assets\contoso.png'
             Width='100'/>
     </InlineUIContainer>
 </Paragraph>
 <Paragraph>
-    Lorem ipsum dolor sit amet, consectetur
-    adipiscing elit. Duis sit amet nisi eget ex gravida molestie. Nulla varius leo at nulla
-    molestie, sit amet ultricies nisi efficitur. Proin non massa eros. Fusce convallis maximus risus
-    ac aliquam. Fusce non tempus orci, at dignissim velit. Nulla at sollicitudin arcu. Proin arcu
-    mi, gravida at suscipit a, gravida eu lorem. Nulla commodo, mi sit amet tincidunt pharetra,
-    justo ipsum malesuada mi, eget malesuada est elit at ipsum.
-</Paragraph>
-<Paragraph>
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sit amet nisi eget ex
-    gravida molestie. Nulla varius leo at nulla molestie, sit amet ultricies nisi efficitur. Proin
-    non massa eros. Fusce convallis maximus risus ac aliquam. Fusce non tempus orci, at dignissim
-    velit. Nulla at sollicitudin arcu. Proin arcu mi, gravida at suscipit a, gravida eu lorem. Nulla
-    commodo, mi sit amet tincidunt pharetra, justo ipsum malesuada mi, eget malesuada est elit at
-    ipsum.
+Welcome to Contoso Corp!
+<LineBreak/>
+<LineBreak/>
+Before you proceed with the device enrollment process, please carefully read and accept the following terms and conditions. By enrolling your device with Contoso Corp, you agree to comply with these terms:
+<LineBreak/>
+<LineBreak/>
+<Bold>1. Acceptable Use:</Bold> You agree to use the enrolled device for business purposes only and in accordance with our organization's policies. Unauthorized or improper use of the device is strictly prohibited.
+<LineBreak/>
+<Bold>2. Data Security:</Bold> You are responsible for safeguarding any confidential or sensitive data stored on or accessed through the enrolled device. Ensure that you follow our security guidelines to protect company information.
+<LineBreak/>
+<Bold>3. Software Compliance:</Bold> You agree to install and maintain only authorized software on the enrolled device. Unauthorized software installations are prohibited.
+<LineBreak/>
+<Bold>4. Reporting Incidents:</Bold> In the event of a lost or stolen device, a security breach, or any suspicious activity, you must report it immediately to the IT department.
+<LineBreak/>
+<Bold>5. Updates and Maintenance:</Bold> You agree to allow remote management of the device for updates, patches, and maintenance purposes. This may include software updates, security patches, and system optimization.
+<LineBreak/>
+<Bold>6. Privacy:</Bold> Your use of the enrolled device may be monitored for security and compliance purposes. We respect your privacy and will handle any collected data in accordance with our privacy policy.
+<LineBreak/>
+<Bold>7. Compliance with Laws:</Bold> You agree to use the enrolled device in compliance with all applicable laws, regulations, and industry standards.
+<LineBreak/>
+<Bold>8. Termination:</Bold> Contoso Corp reserves the right to terminate device access and enrollment privileges at any time and for any reason. In case of termination, you must return the device and any associated materials promptly.
+<LineBreak/>
+<Bold>9. Support:</Bold> For technical support or assistance related to the enrolled device, please contact our IT helpdesk.
+<LineBreak/>
+<LineBreak/>
+By enrolling your device, you acknowledge that you have read, understood, and agreed to these terms. Failure to comply with these terms may result in disciplinary action, including the revocation of device access privileges.
+<LineBreak/>
+If you have any questions or concerns about these terms, please contact our IT department for clarification.
+<LineBreak/>
+<LineBreak/>
+Thank you for your cooperation and commitment to maintaining a secure and productive computing environment at Contoso Corp.
 </Paragraph>
