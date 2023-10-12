@@ -46,7 +46,8 @@ Function Invoke-AsCurrentUser(){
     $trigger = New-ScheduledTaskTrigger -AtLogon
 
     # Define targeted user
-    $principal = New-ScheduledTaskPrincipal -UserId (Get-CimInstance -ClassName Win32_ComputerSystem | Select-Object -expand UserName)
+    $User = Get-WmiObject Win32_Process -Filter "Name='explorer.exe'" | ForEach-Object { $_.GetOwner() } | Select-Object -Unique
+    $principal = New-ScheduledTaskPrincipal -UserId "$($User.Domain)\$($User.User)"
     
     # Define settings
     $settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries

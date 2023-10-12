@@ -15,7 +15,7 @@ namespace Windows_Desktop_Script_UI
         Window m_window;
         AppWindow m_AppWindow;
         WindowsSystemDispatcherQueueHelper m_wsdqHelper; // See below for implementation.
-        MicaController m_backdropController;
+        DesktopAcrylicController m_backdropController;
         SystemBackdropConfiguration m_configurationSource;
 
 
@@ -57,7 +57,7 @@ namespace Windows_Desktop_Script_UI
 
         bool TrySetSystemBackdrop()
         {
-            if (MicaController.IsSupported())
+            if (DesktopAcrylicController.IsSupported())
             {
                 m_wsdqHelper = new WindowsSystemDispatcherQueueHelper();
                 m_wsdqHelper.EnsureWindowsSystemDispatcherQueueController();
@@ -71,7 +71,9 @@ namespace Windows_Desktop_Script_UI
                 // Initial configuration state.
                 m_configurationSource.IsInputActive = true;
                 SetConfigurationSourceTheme();
-                m_backdropController = new MicaController();
+                m_backdropController = new DesktopAcrylicController();
+                //m_backdropController.TintOpacity = 0.3f;
+                //m_backdropController.TintColor = Colors.Black;
                 // Enable the system backdrop.
                 // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
                 m_backdropController.AddSystemBackdropTarget(m_window.As<Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop>());
@@ -121,7 +123,7 @@ namespace Windows_Desktop_Script_UI
         }
 
     }
-
+    
     class WindowsSystemDispatcherQueueHelper
     {
         [StructLayout(LayoutKind.Sequential)]
@@ -155,4 +157,5 @@ namespace Windows_Desktop_Script_UI
             }
         }
     }
+    
 }

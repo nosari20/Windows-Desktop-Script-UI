@@ -10,44 +10,104 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <!-- <StackPanel Orientation="Vertical"> -->
 
-    <!-- Main Grid -->
+    <!-- Global grid -->
     <Grid>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="40" />
+            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="40" />
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="auto"/>
+            <RowDefinition Height="40" />
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="40" />
         </Grid.RowDefinitions>
 
-        <!-- Main Panel -->
-        <StackPanel Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top">
 
-            <Image Name="MainImage" Height="100" Margin="0,20,0,0" HorizontalAlignment="Center"/>
 
-            <TextBlock Name="MainText" Text="" FontSize="20" Margin="0,10,0,0" HorizontalAlignment="Center"/>
+        <!-- Inner grid -->
+        <Grid Grid.Column="1" Grid.Row="1"  Padding="30" CornerRadius="3" Background="{ThemeResource AcrylicBackground}">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
             
-            <!-- Form Panel -->
-            <StackPanel Name="FormPanel" Orientation="Vertical" MinHeight="400" Scale="0,0,0">
-                <StackPanel.ScaleTransition>
-                    <Vector3Transition />
-                </StackPanel.ScaleTransition>
 
-                <!-- Pannel where input element will be added -->
-                <StackPanel Name="InputPanel" Orientation="Vertical" Margin="0,50,0,0"></StackPanel>
-
-                <!-- Form submit button -->
-                <Button Name="FormSubmit" Content="Submit" Margin="0,20,0,0" HorizontalAlignment="Center" VerticalAlignment="Bottom" Click="OnButtonSubmit"/>
+            <!-- Left pane -->
+            <StackPanel Grid.Column="0" Grid.Row="0" Orientation="Vertical" VerticalAlignment="Center">
+                <Image Name="MainImage" MaxWidth="200" />
             </StackPanel>
 
-        </StackPanel>
-        
-        <!-- Progress Panel -->
-        <StackPanel  Grid.Row="1"  HorizontalAlignment="Center">
-            <ProgressBar Name="Progress" Width="500" MinHeight="4" IsIndeterminate="True" Margin="0,50,0,0"/>
-            <TextBlock Name="ProgressText" Text="" FontSize="10" Margin="0,5,0,0" HorizontalAlignment="Center"/>
-            <TextBlock Name="SubText" Text="" Margin="0,40,0,40" HorizontalAlignment="Center"/>
-        </StackPanel>
+
+
+
+            <!-- Right pane -->
+            <Grid Grid.Column="1" Grid.Row="1">
+
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="60" />
+                </Grid.RowDefinitions>
+
+
+                <!-- Top -->
+                <StackPanel Grid.Column="0" Grid.Row="0" Padding="0,20,0,0">
+                    <!-- Title -->
+                    <TextBlock Name="MainText" FontWeight="SemiBold" FontSize="20" FontFamily="Segoe" Margin="0,0,0,20"/>
+
+                    <!-- Text -->
+                    <TextBlock Name="SubText" FontSize="12"  FontFamily="Segoe" TextWrapping="Wrap" Opacity=".7" Margin="0,0,0,20"/>
+
+                </StackPanel>
+
+
+                <!-- Middle -->
+                <ScrollViewer Grid.Column="0" Grid.Row="1" VerticalScrollMode="Enabled" VerticalScrollBarVisibility="Visible" Margin="0,20,0,0">
+
+
+
+
+                    <!-- Imput area -->
+                    <StackPanel Name="FormPanel" Orientation="Vertical" VerticalAlignment="Top">
+
+                        <!-- Pannel where input element will be added -->
+                        <StackPanel Name="InputPanel" Orientation="Vertical" Padding="0,25,0,0" HorizontalAlignment="Left"></StackPanel>
+                        
+                        <!-- Loader -->
+                        <ProgressRing Name="Loader" IsActive="True"  Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0" Height="120" Width="120" />
+                        <TextBlock Name="LoaderText" FontSize="13"  Visibility="Collapsed" FontFamily="Segoe" Margin="0,40,0,0" HorizontalAlignment="Center" TextWrapping="Wrap"/>
+
+                    </StackPanel>
+
+
+
+                </ScrollViewer>
+
+
+                <!-- Bottom -->
+                <StackPanel Grid.Column="0" Grid.Row="2" HorizontalAlignment="Right" Padding="0,30,0,0">
+                    <Button Name="FormSubmit" Content="Next" Click="OnButtonSubmit"  FontFamily="Segoe" Style="{StaticResource AccentButtonStyle}"/>
+                </StackPanel>
+            </Grid>
+
+
+
+
+        </Grid>
+
     </Grid>
 
-    <!-- </StackPanel> -->
+
+
 </Window>
+

@@ -3,7 +3,7 @@ Import-Module "$PSScriptRoot/modules/Invoke-AfterESP"
 $ONBOARDING_DIRECTORY = "$env:ProgramFiles\Onboarding"
 
 # Copy onboarding files
-Remove-Item -Path "$ONBOARDING_DIRECTORY" -Force -Recurse
+Remove-Item -Path "$ONBOARDING_DIRECTORY" -Force -Recurse -ErrorAction SilentlyContinue
 Copy-Item -Path "$PSScriptRoot\OnboardingUI" -Destination "$ONBOARDING_DIRECTORY" -Force -Recurse
 
 

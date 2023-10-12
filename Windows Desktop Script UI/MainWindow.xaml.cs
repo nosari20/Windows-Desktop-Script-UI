@@ -320,50 +320,40 @@ namespace Windows_Desktop_Script_UI
                     }
                     break;
 
-                case "Progress":
-                    if (command.hasOption("Type"))
-                    {
+                case "Load":
 
-                        if (command.getOption("Type") == "Determinate" & command.hasOption("Value"))
+                    if (command.hasFlag("Hide"))
+                    {
+                        Loader.Visibility = Visibility.Collapsed;
+                        LoaderText.Visibility = Visibility.Collapsed;
+                        FormSubmit.Visibility = Visibility.Collapsed;
+                    }
+                    else
+                    {
+                        Loader.Visibility = Visibility.Visible;
+                        LoaderText.Visibility = Visibility.Visible;
+                        FormPanel.VerticalAlignment = VerticalAlignment.Center;
+                        InputPanel.Children.Clear();
+                        FormSubmit.Visibility = Visibility.Collapsed;
+
+                        if (command.hasOption("Text"))
                         {
-                            Progress.IsIndeterminate = false;
-                            Progress.Value = Convert.ToDouble(command.getOption("Value"));
+                            LoaderText.Text = command.getOption("Text").Replace("\\n","\n");
                         }
                         else
                         {
-                            Progress.IsIndeterminate = true;
-                            ProgressText.Text = "";
+                            LoaderText.Text = "";
                         }
-
-                        if (command.hasOption("Height"))
-                        {
-                            Progress.MinHeight = Convert.ToDouble(command.getOption("Height"));
-                        }
-
-                        if (command.hasOption("Width"))
-                        {
-                            Progress.Width = Convert.ToDouble(command.getOption("Width"));
-                        }
-
-                        if (command.hasFlag("ShowPercentage"))
-                        {
-                            ProgressText.Text = (Progress.Value + "%");
-                        }
-
-                        Log.Write("Progress : [IsIndeterminate: " + Progress.IsIndeterminate + 
-                            ", Value: " + Progress.Value + 
-                            ", Height: " + Progress.Height + 
-                            ", Width: " + Progress.Width +
-                            ", ProgressText: " + ProgressText.Text +
-                            "]"
-                         );
                     }
+
+                    Log.Write("Load [Hide: " + command.hasFlag("Hide") + "]");
                     break;
+
                 case "Input":
 
                     if (command.hasFlag("Hide"))
                     {
-                        FormPanel.Scale = new System.Numerics.Vector3(0, 0, 0);
+                        InputPanel.Children.Clear();
                         break;
                     }
 
@@ -371,6 +361,10 @@ namespace Windows_Desktop_Script_UI
                     if (command.hasOption("Type"))
                     {
                         InputPanel.Children.Clear();
+                        Loader.Visibility = Visibility.Collapsed;
+                        LoaderText.Visibility = Visibility.Collapsed;
+                        FormSubmit.Visibility = Visibility.Visible;
+                        FormPanel.VerticalAlignment = VerticalAlignment.Top;
 
 
                         if (command.hasOption("Out"))
@@ -440,6 +434,11 @@ namespace Windows_Desktop_Script_UI
                                 {
                                     ((UserInputButtonVideo)m_CurrentInput).AreTransportControlsEnabled = true;
                                 }
+
+                                if (command.hasFlag("SoundOn"))
+                                {
+                                    ((UserInputButtonVideo)m_CurrentInput).IsMuted = false;
+                                }
                                 break;
 
                             case "ButtonText":
@@ -492,7 +491,6 @@ namespace Windows_Desktop_Script_UI
 
                             Log.Write("Input : " + m_CurrentInput.ToString());
                             
-                            FormPanel.Scale = new System.Numerics.Vector3(1, 1, 1);
 
                         }
                         
@@ -509,7 +507,6 @@ namespace Windows_Desktop_Script_UI
         private void OnButtonSubmit(object sender, RoutedEventArgs e)
         {
             m_CurrentInput.WriteOutput();
-            FormPanel.Scale = new System.Numerics.Vector3(0, 0, 0);
         }
     }
 }

@@ -56,7 +56,8 @@ $INPUTFILE = "C:\Users\Public\out"
 Start-Job -Scriptblock {
     While($True){
         Get-Process StartMenuExperienceHost -ErrorAction SilentlyContinue | Stop-Process -Force
-        Start-Sleep -Milliseconds  100
+        Get-Process SetupHost -ErrorAction SilentlyContinue | Stop-Process -Force
+        Start-Sleep -Milliseconds  50
     }
     
 }
@@ -66,30 +67,20 @@ Start-Job -Scriptblock {
 ################################################################################
 
 # Launch app
-Invoke-AsCurrentUser {
-    Start-Process -FilePath "$($Argv[0])/UI/Windows Desktop Script UI.exe" -ArgumentList "--WatchPath=`"$($Argv[1])`" --WindowTitle=`"Hello World!`" --WelcomeMessage=`"`" -AlwaysOnTop -FullScreen" -NoNewWindow | Out-Null
-} -Arguments @(,$PSScriptRoot,$FILE)
-
-################################################################################
-############################### Startup UI #####################################
-################################################################################
-
-$User = $(Get-ItemPropertyValue -Path Registry::\HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Authentication\LogonUI -Name LastLoggedOnDisplayName)
-
-UI "MainText --Text=`"Hello $($User)`""
-UI "MainImage --Source=`"$PSScriptRoot/assets/windows.png`" --Height=150"
-UI "Progress -Hide"
-UI "SubText --Text=`"Welcome to Windows, let's setup your device.`""
-UI "Input --Type=ButtonVideo --Value=`"$PSScriptRoot/assets/Windows11.mp4`" --Button=`"Continue`" --Height=300 --Width=500 -Autoplay --Out=`"$INPUTFILE`""
-Wait-FileChange -File $INPUTFILE
-
+If($(whoami) -eq "nt authority\system"){
+    Invoke-AsCurrentUser {
+        Start-Process -FilePath "$($Argv[0])/UI/Windows Desktop Script UI.exe" -ArgumentList "--WatchPath=`"$($Argv[1])`" --WindowTitle=`"Hello World!`" --WelcomeMessage=`"`" -AlwaysOnTop -FullScreen" -NoNewWindow | Out-Null
+    } -Arguments @(,$PSScriptRoot,$FILE)
+}Else{
+    Start-Process -FilePath "$PSScriptRoot/UI/Windows Desktop Script UI.exe" -ArgumentList "--WatchPath=`"$FILE`" --WindowTitle=`"Hello World!`" --WelcomeMessage=`"`" -AlwaysOnTop -FullScreen" -NoNewWindow -RedirectStandardOutput ".\NUL" | Out-Null
+}
 
 
 ################################################################################
 ############################### TOU ############################################
 ################################################################################
 
-UI "MainText --Text=`"Terme of Use`""
+UI "MainText --Text=`"Hello $(Get-WmiObject Win32_Process -Filter "Name='explorer.exe'" | ForEach-Object { $_.GetOwner() } | Select-Object -Unique)`""
 UI "MainImage --Source=`"$PSScriptRoot/assets/terms.png`" --Height=150"
 UI "Progress -Hide"
 UI "SubText --Text=`"Please read and accept terms of use.`""
@@ -108,6 +99,7 @@ UI "SubText --Text=`"Please select your timezone.`""
 UI "Input --Type=ComboBox --Value=`"$((Get-TimeZone).DisplayName)`" --AllowedValues=`"$(([System.TimeZoneInfo]::GetSystemTimeZones()).DisplayName -join "|")`" --Button=`"Save`" --Width=400  --Out=`"$INPUTFILE`""
 Wait-FileChange -File $INPUTFILE
 $TIMEZONE = $(Get-Content -Path $INPUTFILE)
+Set-TimeZone -Id (([System.TimeZoneInfo]::GetSystemTimeZones()) | Where-Object {"$($_.DisplayName)" -eq "$TIMEZONE"}).Id
 Remove-Item $INPUTFILE
 
 
@@ -118,21 +110,17 @@ Remove-Item $INPUTFILE
 UI "MainText --Text=`"BitLocker setup"
 UI "MainImage --Source=`"$PSScriptRoot/assets/security.png`" --Height=150"
 UI "SubText --Text=`"Let's setting up BitLocker to protect your data.`""
-UI "Progress --Type=`"Determinate`" --Value=0 -ShowPercentage"
 
 $PIN = $False;
 $PINRE = $True;
 while ($PIN -ne $PINRE) {
 
-    UI "Progress --Type=`"Determinate`" --Value=33 -ShowPercentage"
 
     UI "Input --Type=Password --Header=`"Type BitLocker password`" --Button=Continue --Width=400 --Out=`"$INPUTFILE`""
     Wait-FileChange -File $INPUTFILE
     $PIN = $(Get-Content -Path $INPUTFILE)
     Remove-Item $INPUTFILE
 
-    UI "Progress --Type=`"Determinate`" --Value=66 -ShowPercentage"
-    Start-Sleep -Milliseconds 500 
 
     UI "Input --Type=Password --Header=`"Retype BitLocker password`" --Button=`"Set PIN`" --Width=400 --Out=`"$INPUTFILE`""
     Wait-FileChange -File $INPUTFILE
@@ -143,30 +131,63 @@ while ($PIN -ne $PINRE) {
 
 ### Use the following code to setup BitLocker
 ###
-### $BLV = Get-BitlockerVolume -MountPoint "C:"
-### $TpmPinKeyProtector = $BLV.KeyProtector | Where-Object {$PSItem.KeyProtectorType -eq "TpmPin"}
-### Remove-BitLockerKeyProtector -MountPoint "C:" -KeyProtectorId $TpmPinKeyProtector.KeyProtectorId
-### Add-BitLockerKeyProtector -MountPoint $env:SystemDrive -Pin $(ConvertTo-SecureString $PIN -AsPlainText -Force) -TpmAndPinProtector
+#$BLV = Get-BitlockerVolume -MountPoint "C:"
+#$TpmPinKeyProtector = $BLV.KeyProtector | Where-Object {$PSItem.KeyProtectorType -eq "TpmPin"}
+#Remove-BitLockerKeyProtector -MountPoint "C:" -KeyProtectorId $TpmPinKeyProtector.KeyProtectorId
+#Add-BitLockerKeyProtector -MountPoint $env:SystemDrive -Pin $(ConvertTo-SecureString $PIN -AsPlainText -Force) -TpmAndPinProtector
 
-UI "Progress --Type=`"Determinate`" --Value=100 -ShowPercentage"
+UI "Load --Text='Setting up BitLocker PIN...'"
+Start-Sleep -Seconds 1 
+
+UI "Load -Hide"
 UI "SubText --Text=`"BitLocker successfully setup.`"" 
 
 Start-Sleep -Seconds 1
+
 
 
 ################################################################################
 ############################### Personalization ################################
 ################################################################################
 
+
+
+##################################### Taskbar ###################################
+
+
+
+UI "MainText --Text=`"Personalization"
+UI "MainImage --Source=`"$PSScriptRoot/assets/personalization.png`" --Height=150"
+UI "SubText --Text=`"Choose your prefered taskbar position`"" 
+UI "Progress -Hide"
+UI "Input --Type=ImageChooser --Header=`"Select taskbar position`" --AllowedValues=`"$PSScriptRoot/assets/StartLeft.png#Left|$PSScriptRoot/assets/StartCenter.png#Center`" --Width=300 --Button=Save --Out=`"$INPUTFILE`""
+Wait-FileChange -File $INPUTFILE
+
+$POSITION = $(Get-Content -Path $INPUTFILE)
+Remove-Item $INPUTFILE
+
+
+## Apply theme
+If($POSITION -eq "$PSScriptRoot/assets/StartLeft.png"){
+    New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Value 0 -Force
+}Else{
+    New-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "TaskbarAl" -Value 1 -Force
+}
+
+
+
+##################################### Theme ######################################
+
+
 UI "MainText --Text=`"Personalization"
 UI "MainImage --Source=`"$PSScriptRoot/assets/personalization.png`" --Height=150"
 UI "SubText --Text=`"Choose your prefered theme`"" 
 UI "Progress -Hide"
-
 UI "Input --Type=ImageChooser --Header=`"Select theme`" --AllowedValues=`"$PSScriptRoot/assets/WinDark.png#Dark theme|$PSScriptRoot/assets/WinLight.jpg#Light theme`" --Width=300 --Button=Save --Out=`"$INPUTFILE`""
 Wait-FileChange -File $INPUTFILE
-UI "SubText --Text=`"Applying theme...`"" 
-UI "Progress --Type=Indeterminate"
+
+UI "Load --Text='Applying theme...'"
+
 $THEME = $(Get-Content -Path $INPUTFILE)
 Remove-Item $INPUTFILE
 
@@ -175,8 +196,8 @@ Remove-Item $INPUTFILE
 
 $THEME_FOLDER = "C:\Windows\resources\Themes"
 
-## Launch the lines bellow in user context
-If($Theme -eq "$PSScriptRoot/assets/WinDark.png"){
+## Apply theme
+If($THEME -eq "$PSScriptRoot/assets/WinDark.png"){
     Invoke-AsCurrentUser {
         rundll32.exe themecpl.dll,OpenThemeAction "$($Argv[0])/dark.theme"
     } -Arguments @(,$THEME_FOLDER)
@@ -191,22 +212,24 @@ $loop=0
 While("$(Get-Process SystemSettings -ErrorAction SilentlyContinue)" -eq ""){
     Start-Sleep -Milliseconds  100
     $loop=+1
-    If($loop -ge 10){
-        Continue
+    If($loop -ge 50){
+        Break
     }
 }
 Start-Sleep -Seconds 1
+
 ## Close process
-$loop=0
-While("$(Get-Process SystemSettings -ErrorAction SilentlyContinue)" -ne ""){
-    Start-Sleep -Milliseconds  100
-    $loop=+1
-    If($loop -ge 10){
-        Continue
+Start-Job {
+    $loop=0
+    While("$(Get-Process SystemSettings -ErrorAction SilentlyContinue)" -ne ""){
+        Start-Sleep -Milliseconds  100
+        $loop=+1
+        If($loop -ge 50){
+            Break
+        }
+        Get-Process SystemSettings -ErrorAction SilentlyContinue | Stop-Process -force
     }
-    Get-Process SystemSettings -ErrorAction SilentlyContinue | Stop-Process -force
 }
-## Launch the lines above in user context
 
 
 ################################################################################
@@ -215,7 +238,8 @@ While("$(Get-Process SystemSettings -ErrorAction SilentlyContinue)" -ne ""){
 UI "MainText --Text=`"Finalization"
 UI "MainImage --Source=`"$PSScriptRoot/assets/restart.png`" --Height=150"
 UI "SubText --Text=`"Your device is ready to go but needs a restart, please wait.`""
-UI "Progress --Type=Indeterminate"
+UI "Load --Text='Waiting for reboot...'"
 
 Start-Sleep -Seconds  3
+UI "Terminate"
 Restart-Computer -Force

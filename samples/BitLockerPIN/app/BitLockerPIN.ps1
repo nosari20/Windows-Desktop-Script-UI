@@ -68,13 +68,10 @@ Invoke-AsCurrentUser {
 UI "MainText --Text=`"BitLocker setup"
 UI "MainImage --Source=`"$PSScriptRoot/assets/security.png`" --Height=150"
 UI "SubText --Text=`"Let's setting up BitLocker to protect your data.`""
-UI "Progress --Type=`"Determinate`" --Value=0 -ShowPercentage"
 
 $PIN = $False;
 $PINRE = $True;
 while ($PIN -ne $PINRE) {
-
-    UI "Progress --Type=`"Determinate`" --Value=00 -ShowPercentage"
 
     UI "Input --Type=Password --Header=`"Type BitLocker password`" --Button=Continue --Width=400 --Out=`"$INPUTFILE`""
     Wait-FileChange -File $INPUTFILE
@@ -97,8 +94,9 @@ while ($PIN -ne $PINRE) {
 ### $TpmPinKeyProtector = $BLV.KeyProtector | Where-Object {$PSItem.KeyProtectorType -eq "TpmPin"}
 ### Remove-BitLockerKeyProtector -MountPoint "C:" -KeyProtectorId $TpmPinKeyProtector.KeyProtectorId
 ### Add-BitLockerKeyProtector -MountPoint $env:SystemDrive -Pin $(ConvertTo-SecureString $PIN -AsPlainText -Force) -TpmAndPinProtector
-
-UI "Progress --Type=`"Determinate`" --Value=100 -ShowPercentage"
+UI "Load --Text=`"Setting PIN...`""
+Start-Sleep -Seconds 1
+UI "Load -Hide"
 UI "SubText --Text=`"BitLocker successfully setup.`"" 
 Start-Sleep -Seconds 2
 UI "Terminate"

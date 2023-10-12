@@ -1,30 +1,29 @@
 # BitLocker PIN
 
-![Screenshot](/samples/BitLockerPIN/BitLockerPIN.gif)
+![Screenshot](/samples/BitLockerPIN/demo.gif)
 
 ## Step 1 : Prerequisites
 
 ### Windows App SDK
 
-0. Download [Windows App SDK](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads)
+0. Download [Windows App SDK 1.4 ](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads)
 1. Package Windows App SDK file using Microsoft Win32 Content Prep Tool
 2. Add it as Win32 app
 
 Install comand:
 ```ps1
-WindowsAppRuntimeInstall.exe
+windowsappruntimeinstall-x64.exe
 ```
 
 Detection:
 ```ps1
-Get-AppxPackage -Name Microsoft.WinAppRuntime.DDLM.3000.851.1712.0-x6 -AllUsers
-Get-AppxPackage -Name Microsoft.WinAppRuntime.DDLM.3000.851.1712.0-x8 -AllUsers
+(get-appxpackage micro*win*appruntime*).packagefullname | Select-String -Pattern ".*1\.4.*"
 ```
 
-Important: this app must be installed in user context, so use a user group for assignment.
+Important: this app must be installed when user profile is created, so use a user group for assignment.
 
 
-### .NET 6
+### .NET 6 (only for framework dependent version)
 
 0. Download [.NET 6](https://dotnet.microsoft.com/en-us/download)
 1. Package .NET 6 file using Microsoft Win32 Content Prep Tool
@@ -32,7 +31,7 @@ Important: this app must be installed in user context, so use a user group for a
 
 Install comand:
 ```ps1
-windowsdesktop-runtime-6.0.16-win-x64.exe /q /norestart
+windowsappruntimeinstall-x64.exe /q /norestart
 ```
 
 Detection:
@@ -40,6 +39,7 @@ Detection:
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
 Try{$(dotnet --list-runtimes) -like "Microsoft.NETCore.App 6.*"}Catch{}
 ```
+
 
 ## Step 2: BitLocker PIN UI
 
