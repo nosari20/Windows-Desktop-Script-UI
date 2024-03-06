@@ -219,17 +219,17 @@ While("$(Get-Process SystemSettings -ErrorAction SilentlyContinue)" -eq ""){
 Start-Sleep -Seconds 1
 
 ## Close process
-Start-Job {
-    $loop=0
-    While("$(Get-Process SystemSettings -ErrorAction SilentlyContinue)" -ne ""){
-        Start-Sleep -Milliseconds  100
-        $loop=+1
-        If($loop -ge 50){
-            Break
-        }
-        Get-Process SystemSettings -ErrorAction SilentlyContinue | Stop-Process -force
+
+$loop=0
+While("$(Get-Process SystemSettings -ErrorAction SilentlyContinue)" -ne ""){
+    Start-Sleep -Milliseconds  100
+    $loop=+1
+    If($loop -ge 50){
+        Break
     }
+    Get-Process SystemSettings -ErrorAction SilentlyContinue | Stop-Process -force
 }
+
 
 
 ################################################################################
