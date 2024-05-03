@@ -36,7 +36,7 @@ This project is developped with the following libraries:
 
 Target devices must have the following runtime installed:
 * [Windows App SDK 1.3](https://aka.ms/windowsappsdk/1.3/1.3.230331000/windowsappruntimeinstall-x64.exe)
-* [.NET 6](https://dotnet.microsoft.com/en-us/download)
+* [.NET 6](https://dotnet.microsoft.com/en-us/download) (not required for self-contained build)
 
 ## Usage
 
