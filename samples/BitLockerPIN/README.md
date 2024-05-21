@@ -6,7 +6,7 @@
 
 ### Windows App SDK
 
-0. Download [Windows App SDK 1.4 ](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/downloads)
+0. Download [Windows App SDK 1.5 ](https://learn.microsoft.com/fr-fr/windows/apps/windows-app-sdk/downloads#windows-app-sdk-15)
 1. Package Windows App SDK file using Microsoft Win32 Content Prep Tool
 2. Add it as Win32 app
 
@@ -17,27 +17,27 @@ windowsappruntimeinstall-x64.exe
 
 Detection:
 ```ps1
-(get-appxpackage micro*win*appruntime*).packagefullname | Select-String -Pattern ".*1\.4.*"
+(get-appxpackage micro*win*appruntime*).packagefullname | Select-String -Pattern ".*1\.5.*"
 ```
 
 Important: this app must be installed when user profile is created, so use a user group for assignment.
 
 
-### .NET 6 (only for framework dependent version)
+### .NET 9 (only for framework dependent version)
 
-0. Download [.NET 6](https://dotnet.microsoft.com/en-us/download)
-1. Package .NET 6 file using Microsoft Win32 Content Prep Tool
+0. Download [.NET 8](https://dotnet.microsoft.com/en-us/download)
+1. Package .NET 8 file using Microsoft Win32 Content Prep Tool
 2. Add it as Win32 app
 
 Install comand:
 ```ps1
-windowsappruntimeinstall-x64.exe /q /norestart
+dotnet-runtime-8.0.5-win-x64.exe /q /norestart
 ```
 
 Detection:
 ```ps1
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User") 
-Try{$(dotnet --list-runtimes) -like "Microsoft.NETCore.App 6.*"}Catch{}
+Try{$(dotnet --list-runtimes) -like "Microsoft.NETCore.App 8.*"}Catch{}
 ```
 
 

@@ -1,7 +1,7 @@
 # Windows Desktop Script UI
 
 [![License MIT](https://img.shields.io/badge/license-MIT-green)](https://opensource.org/license/mit/)
-[![Version alpha](https://img.shields.io/badge/version-rc1-green)](https://github.com/nosari20/Windows-Desktop-Script-UI/releases)
+[![Version beta](https://img.shields.io/badge/version-rc2-green)](https://github.com/nosari20/Windows-Desktop-Script-UI/releases)
 
 ![Visual Studio](https://img.shields.io/badge/Visual%20Studio-5C2D91.svg?style=for-the-badge&logo=visual-studio&logoColor=white)
 ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
@@ -29,14 +29,14 @@ Samples:
 This project is developped with the following libraries:
 * Windows App SDK
 * WinUI 3
-* .NET 6
+* .NET 8
 
 
 ## Prerequisites
 
 Target devices must have the following runtime installed:
-* [Windows App SDK 1.3](https://aka.ms/windowsappsdk/1.3/1.3.230331000/windowsappruntimeinstall-x64.exe)
-* [.NET 6](https://dotnet.microsoft.com/en-us/download) (not required for self-contained build)
+* [Windows App SDK 1.5](https://learn.microsoft.com/fr-fr/windows/apps/windows-app-sdk/downloads#windows-app-sdk-15)
+* [.NET 8](https://dotnet.microsoft.com/en-us/download) (not required for self-contained build)
 
 ## Usage
 
