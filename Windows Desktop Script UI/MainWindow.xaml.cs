@@ -148,7 +148,7 @@ namespace Windows_Desktop_Script_UI
             {
                 string watchPath = m_CLIArgs.getOption("WatchPath");
 
-                Log.Write("Watching file for changes '" + watchPath + "'");
+                Log.Write("Watching file for changes '" + watchPath + "' (" + Path.GetFullPath(watchPath) + ")");
 
                 m_fileWatcher = new FileWatcher(watchPath, m_CLIArgs.hasFlag("Debug"));
                 m_fileWatcher.NewLine += OnNewLine;
@@ -295,7 +295,8 @@ namespace Windows_Desktop_Script_UI
                 case "MainImage":
                     if (command.hasOption("Source"))
                     {
-                        MainImage.Source = new BitmapImage(new Uri(command.getOption("Source"), UriKind.Relative));
+
+                        MainImage.Source = new BitmapImage(new Uri(Path.GetFullPath(command.getOption("Source"))));
 
                         if (command.hasOption("Height"))
                         {
@@ -310,7 +311,7 @@ namespace Windows_Desktop_Script_UI
                         }
 
 
-                        Log.Write("MainImage : [Source: " + MainImage.Source +
+                        Log.Write("MainImage : [Source: " + Path.GetFullPath(command.getOption("Source")) +
                             ", Height: " + MainImage.Height +
                             ", Width: " + MainImage.Width +
                             "]"

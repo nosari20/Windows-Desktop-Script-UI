@@ -56,9 +56,14 @@ $INPUTFILE = "C:\Users\Public\out"
 ################################################################################
 
 # Launch app
-Invoke-AsCurrentUser {
-    Start-Process -FilePath "$($Argv[0])/UI/Windows Desktop Script UI.exe" -ArgumentList "--WatchPath=`"$($Argv[1])`" --WindowTitle=`"BitLocker`" --WelcomeMessage=`"`" -AlwaysOnTop  --Width=670 --Height=690" -NoNewWindow | Out-Null
-} -Arguments @(,$PSScriptRoot,$FILE)
+# Launch app
+If($(whoami) -eq "nt authority\system"){
+    Invoke-AsCurrentUser {
+        Start-Process -FilePath "$($Argv[0])/UI/Windows Desktop Script UI.exe" -ArgumentList "--WatchPath=`"$($Argv[1])`" --WindowTitle=`"Hello World!`" --WelcomeMessage=`"`" -AlwaysOnTop --Width=670 --Height=690" -NoNewWindow | Out-Null
+    } -Arguments @(,$PSScriptRoot,$FILE)
+}Else{
+    Start-Process -FilePath "$PSScriptRoot/UI/Windows Desktop Script UI.exe" -ArgumentList "--WatchPath=`"$FILE`" --WindowTitle=`"Hello World!`" --WelcomeMessage=`"`" -AlwaysOnTop --Width=670 --Height=690" -NoNewWindow -RedirectStandardOutput ".\NUL" | Out-Null
+}
 
 
 ################################################################################

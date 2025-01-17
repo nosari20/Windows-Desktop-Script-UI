@@ -1,0 +1,6 @@
+MainText --Text='Hello Florent'
+SubText --Text='Computer personalization.'
+Input --Type=ComboBox --Header='Select option' --AllowedValues='One|Two|Three' --Value='Two' --Button=OK --Out=./ans.txt
+MainImage --Source='../../../../../samples/BitLockerPIN/app/assets/security.png' --Height=200 -Width=200
+
+

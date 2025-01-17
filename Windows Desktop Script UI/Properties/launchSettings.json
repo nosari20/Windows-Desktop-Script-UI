@@ -1,11 +1,8 @@
 {
   "profiles": {
-    "Windows Desktop Script UI (Package)": {
-      "commandName": "MsixPackage"
-    },
     "Debug Standard (unpackaged)": {
       "commandName": "Project",
-      "commandLineArgs": "--WatchPath=\"C:\\Users\\Florent NOSARI\\OneDrive - Econocom\\Desktop\\test.txt\" --WindowTitle=\"Hello World\" --WelcomeMessage=\"Hello Folks\" -Debug --Height=1000"
+      "commandLineArgs": "--WatchPath=\"../../../../../tests.txt\" --WindowTitle=\"Hello World\" --WelcomeMessage=\"Hello Folks\" -Debug -AlwayOnTop -FullScreen"
     },
     "Help (unpackaged)": {
       "commandName": "Project",
