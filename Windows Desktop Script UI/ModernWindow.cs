@@ -72,7 +72,8 @@ namespace Windows_Desktop_Script_UI
                 m_configurationSource.IsInputActive = true;
                 SetConfigurationSourceTheme();
                 m_backdropController = new DesktopAcrylicController();
-                //m_backdropController.TintOpacity = 0.3f;
+                m_backdropController.TintOpacity = 0.3f;
+                m_backdropController.LuminosityOpacity = 0.4f;
                 //m_backdropController.TintColor = Colors.Black;
                 // Enable the system backdrop.
                 // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
