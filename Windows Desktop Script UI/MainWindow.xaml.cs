@@ -14,6 +14,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Windows_Desktop_Script_UI.InputTypes;
 using Windows_Desktop_Script_UI.UserInputTypes;
 using System.IO;
+using System.Globalization;
 
 namespace Windows_Desktop_Script_UI
 {
@@ -123,7 +124,7 @@ namespace Windows_Desktop_Script_UI
             // Window name
             if (m_CLIArgs.hasOption("Opacity"))
             {
-                float windowOpacity = float.Parse(m_CLIArgs.getOption("Opacity"));
+                float windowOpacity = float.Parse(m_CLIArgs.getOption("Opacity"), CultureInfo.InvariantCulture.NumberFormat);
 
                 Log.Write("Settting window opacity to '" + windowOpacity + "'");
 
