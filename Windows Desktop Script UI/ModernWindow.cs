@@ -28,7 +28,7 @@ namespace Windows_Desktop_Script_UI
             TrySetSystemBackdrop();
         }
 
-        bool TryCustomizeAppWindowTitleBar()
+        private bool TryCustomizeAppWindowTitleBar()
         {
             
             m_AppWindow = GetAppWindowForCurrentWindow();
@@ -55,7 +55,7 @@ namespace Windows_Desktop_Script_UI
             return AppWindow.GetFromWindowId(wndId);
         }
 
-        bool TrySetSystemBackdrop()
+        private bool TrySetSystemBackdrop()
         {
             if (DesktopAcrylicController.IsSupported())
             {
@@ -74,7 +74,7 @@ namespace Windows_Desktop_Script_UI
                 m_backdropController = new DesktopAcrylicController();
                 m_backdropController.TintOpacity = 0.3f;
                 m_backdropController.LuminosityOpacity = 0.4f;
-                //m_backdropController.TintColor = Colors.Black;
+                m_backdropController.TintColor = (new Windows.UI.ViewManagement.UISettings()).GetColorValue(Windows.UI.ViewManagement.UIColorType.Background);
                 // Enable the system backdrop.
                 // Note: Be sure to have "using WinRT;" to support the Window.As<...>() call.
                 m_backdropController.AddSystemBackdropTarget(m_window.As<Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop>());
@@ -110,6 +110,7 @@ namespace Windows_Desktop_Script_UI
             if (m_configurationSource != null)
             {
                 SetConfigurationSourceTheme();
+                m_backdropController.TintColor = (new Windows.UI.ViewManagement.UISettings()).GetColorValue(Windows.UI.ViewManagement.UIColorType.Background);
             }
         }
 
@@ -117,10 +118,15 @@ namespace Windows_Desktop_Script_UI
         {
             switch (((FrameworkElement)m_window.Content).ActualTheme)
             {
-                case ElementTheme.Dark: m_configurationSource.Theme = Microsoft.UI.Composition.SystemBackdrops.SystemBackdropTheme.Dark; break;
-                case ElementTheme.Light: m_configurationSource.Theme = Microsoft.UI.Composition.SystemBackdrops.SystemBackdropTheme.Light; break;
-                case ElementTheme.Default: m_configurationSource.Theme = Microsoft.UI.Composition.SystemBackdrops.SystemBackdropTheme.Default; break;
+                case ElementTheme.Dark:     m_configurationSource.Theme = SystemBackdropTheme.Dark;break;
+                case ElementTheme.Light:    m_configurationSource.Theme = SystemBackdropTheme.Light; break;
+                case ElementTheme.Default:  m_configurationSource.Theme = SystemBackdropTheme.Default; break;
             }
+        }
+
+        public void SetOpacity(float opacity)
+        {
+            m_backdropController.LuminosityOpacity = opacity;
         }
 
     }

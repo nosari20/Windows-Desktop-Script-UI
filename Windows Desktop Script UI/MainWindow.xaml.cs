@@ -25,6 +25,7 @@ namespace Windows_Desktop_Script_UI
 
         // App Window instance
         Microsoft.UI.Windowing.AppWindow m_AppWindow;
+        ModernWindow m_SetSystemBackdrop;
 
         // App instance
         App m_App;
@@ -40,7 +41,6 @@ namespace Windows_Desktop_Script_UI
         string m_OutFileUri;
 
         // Current input
-        //string m_CurrentInput;
         IUserInput m_CurrentInput;
 
 
@@ -85,7 +85,7 @@ namespace Windows_Desktop_Script_UI
             GetAppWindow();
 
             // Modernize window
-            ModernWindow m_SetSystemBackdrop = new ModernWindow(this);
+            m_SetSystemBackdrop = new ModernWindow(this);
 
 
             // Handle options
@@ -118,6 +118,16 @@ namespace Windows_Desktop_Script_UI
                 Log.Write("Settting window title to '" + windowName + "'");
 
                 ChangeWindowName(windowName);
+            }
+
+            // Window name
+            if (m_CLIArgs.hasOption("Opacity"))
+            {
+                float windowOpacity = float.Parse(m_CLIArgs.getOption("Opacity"));
+
+                Log.Write("Settting window opacity to '" + windowOpacity + "'");
+
+                ChangeWindowOpacity(windowOpacity);
             }
 
             // Welcome message
@@ -164,6 +174,7 @@ namespace Windows_Desktop_Script_UI
 
         }
 
+
         // Terminate process
         private void Terminate()
         {
@@ -191,6 +202,11 @@ namespace Windows_Desktop_Script_UI
             
         }
 
+        private void ChangeWindowOpacity(float windowOpacity)
+        {
+            m_SetSystemBackdrop.SetOpacity(windowOpacity);
+        }
+
         // Change window to full screen
         private void SetFullScreen()
         {
@@ -210,12 +226,13 @@ namespace Windows_Desktop_Script_UI
             Console.WriteLine("Orchestrated Window");
             Console.WriteLine("Usage : <bin>.exe --WatchPath=<FILE> [OPTIONS] [FLAGS]");
             Console.WriteLine("Options : ");
-            Console.WriteLine("--WatchPath=<FILE>         Set orchestrator file path");
-            Console.WriteLine("--WindowTitle=<NAME>       Set Window name");
-            Console.WriteLine("--WelcomeMessage=<MESSAGE> Set Window name");
-            Console.WriteLine("-FullScreen                Set Window full screen");
-            Console.WriteLine("-AlwaysOnTop               Set Window full screen");
-            Console.WriteLine("-Debug                     Set Window full screen");
+            Console.WriteLine("--WatchPath=<FILE>         Set file path to watch");
+            Console.WriteLine("--WindowTitle=<NAME>       Set window name");
+            Console.WriteLine("--WelcomeMessage=<MESSAGE> Set welcome message");
+            Console.WriteLine("-FullScreen                Set window full screen");
+            Console.WriteLine("-AlwaysOnTop               Set window to be always on top");
+            Console.WriteLine("--Opacity=<OPACITY>        Set window opacity (0 to 1)");
+            Console.WriteLine("-Debug                     Show debug messages");
             Console.WriteLine("-h, -help                  Display this message");
         }
 
@@ -242,6 +259,7 @@ namespace Windows_Desktop_Script_UI
         }
 
 
+        // Execute command
         private void ExecuteCommand(string commandStr)
         {
 
@@ -504,11 +522,13 @@ namespace Windows_Desktop_Script_UI
         }
 
 
-
+        // Button handler
         private void OnButtonSubmit(object sender, RoutedEventArgs e)
         {
             m_CurrentInput.WriteOutput();
         }
+
+
     }
 }
 

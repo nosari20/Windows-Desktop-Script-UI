@@ -369,6 +369,11 @@ UI "Terminate"
 The following tools are required to edit:
 * Visual Studio with Windows App SDK components ([instructions](https://learn.microsoft.com/en-us/windows/apps/windows-app-sdk/set-up-your-development-environment?tabs=cs-vs-community%2Ccpp-vs-community%2Cvs-2022-17-1-a%2Cvs-2022-17-1-b))
 
+Build single file
+```powershell
+dotnet publish -c Release -p:Platform=x64 -p:PublishSingleFile=true --self-contained=true -p:WindowsAppSDKSelfContained=true
+```
+
 ## Inspiration
 
 This project was inspired by [Mactroll/DEPNotify](https://gitlab.com/Mactroll/DEPNotify) (macOS)
