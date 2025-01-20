@@ -53,6 +53,7 @@ Start-Process -FilePath "./Windows Desktop Script UI.exe" -ArgumentList "--Watch
 * `--Width`          : window width (optional)
 * `-FullScreen`      : fullscreen flag (optional)
 * `-AlwaysOnTop`     : always on top flag (optional)
+* `--Opacity`        : window opacity (optional)
 * `-Debug`           : debug flag (optional)
 
 
