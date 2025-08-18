@@ -324,7 +324,7 @@ Wait-FileChange -File $INPUTFILE
 UI "MainText --Text=`"Finalization"
 UI "MainImage --Source=`"$PSScriptRoot/restart.png`" --Height=150"
 UI "SubText --Text=`"Your device is ready to go but needs a restart, please wait.`""
-UI "Load --Type='Waiting for reboot...'"
+UI "Load --Text='Waiting for reboot...'"
 
 Start-Sleep -Seconds  3
 UI "Terminate"
