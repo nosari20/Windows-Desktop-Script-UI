@@ -344,6 +344,32 @@ namespace Windows_Desktop_Script_UI
                         {
                             LoaderText.Text = "";
                         }
+
+                        if(command.hasOption("Type"))
+                        {
+                            if(command.getOption("Type") == "Determinate")
+                            {
+                                Loader.IsIndeterminate = false;
+
+                                if (command.hasOption("Value"))
+                                {
+                                    double progressValue = Convert.ToDouble(command.getOption("Value"));
+                                    if (progressValue >= 0 && progressValue <= 100)
+                                    {
+                                        Loader.Value = progressValue;
+
+                                        if (command.hasOption("ShowPercentage"))
+                                        {
+                                            LoaderText.Text += " (" + progressValue.ToString() + "%)";
+                                        }
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                Loader.IsIndeterminate = true;
+                            }
+                        }
                     }
 
                     Log.Write("Load [Hide: " + command.hasFlag("Hide") + "]");
