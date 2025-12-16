@@ -1,0 +1,125 @@
+name: Quick Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  quick-release:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build and publish x64 (primary platform)
+      run: |
+        dotnet publish "Windows Desktop Script UI/Windows Desktop Script UI.csproj" `
+          --configuration Release `
+          --platform x64 `
+          --runtime win-x64 `
+          --self-contained true `
+          --output "release-output" `
+          -p:PublishSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -p:IncludeAllContentForSelfExtract=true `
+          -p:WindowsAppSDKSelfContained=true `
+          -p:EnableCompressionInSingleFile=true `
+          -p:PublishTrimmed=false `
+          -p:SatelliteResourceLanguages=en `
+          --verbosity normal
+
+    - name: Prepare release asset
+      run: |
+        $exePath = "release-output/Windows Desktop Script UI.exe"
+        $releaseName = "WindowsDesktopScriptUI-${{ github.event.inputs.version }}.exe"
+        
+        if (Test-Path $exePath) {
+          Copy-Item $exePath $releaseName
+          $fileInfo = Get-Item $releaseName
+          $sizeInMB = [math]::Round($fileInfo.Length / 1MB, 2)
+          echo "File created: $releaseName ($sizeInMB MB)"
+        } else {
+          echo "Error: Executable not found at $exePath"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.event.inputs.version }}
+        release_name: Windows Desktop Script UI ${{ github.event.inputs.version }}
+        draft: false
+        prerelease: ${{ github.event.inputs.prerelease }}
+        body: |
+          ## Windows Desktop Script UI ${{ github.event.inputs.version }}
+          
+          **Single-file executable for Windows 10/11 (x64)**
+          
+          ### What's New
+          - Self-contained application (no .NET runtime required)
+          - Single executable file (~66MB)
+          - Dynamic UI generation based on external commands
+          - File watching capabilities
+          - Modern Windows 11 design with Acrylic backdrop
+          
+          ### System Requirements
+          - Windows 10 version 1903 (build 18362) or later
+          - Windows 11 (recommended)
+          - x64 architecture
+          
+          ### Installation
+          1. Download `WindowsDesktopScriptUI-${{ github.event.inputs.version }}.exe`
+          2. Run directly - no installation required!
+          
+          ### Usage
+          ```
+          WindowsDesktopScriptUI-${{ github.event.inputs.version }}.exe --WatchPath="path/to/your/script.txt" [OPTIONS]
+          ```
+          
+          **Available Options:**
+          - `--WindowTitle="My Window"` - Set custom window title
+          - `--WelcomeMessage="Hello!"` - Set welcome message
+          - `--Height=600 --Width=800` - Set window dimensions
+          - `-FullScreen` - Launch in full screen
+          - `-AlwaysOnTop` - Keep window always on top
+          - `-Debug` - Enable debug logging
+          
+          ### Commands (in watch file)
+          - `MainText --Text="Your title"`
+          - `SubText --Text="Your subtitle"`  
+          - `MainImage --Source="image.jpg"`
+          - `Load --Text="Loading..." --Type=Indeterminate`
+          - `Input --Type=Text --Header="Enter name"`
+          - And many more...
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: WindowsDesktopScriptUI-${{ github.event.inputs.version }}.exe
+        asset_name: WindowsDesktopScriptUI-${{ github.event.inputs.version }}.exe
+        asset_content_type: application/octet-stream
