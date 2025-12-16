@@ -118,6 +118,9 @@ UI "Load --Text='Please wait..'"
 ```
 * `--Text`           : text behind progresss ring (optional, use \n for line break)
 * `-Hide`            : hide progress ring (optional)
+* `--Type`           : type `Determinate` or `Undeterminate` (default) (optional)
+*  `--Value`         : value between 0 and 100 (required if `Determinate`)
+*  `-ShowPercentage` : show percentage under loader (optional)
 
 #### Input
 ```ps1
