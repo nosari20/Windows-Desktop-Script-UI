@@ -378,7 +378,7 @@ namespace Windows_Desktop_Script_UI
                                     {
                                         Loader.Value = progressValue;
 
-                                        if (command.hasOption("ShowPercentage"))
+                                        if (command.hasFlag("ShowPercentage"))
                                         {
                                             LoaderText.Text += " (" + progressValue.ToString() + "%)";
                                         }
