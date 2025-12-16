@@ -1,0 +1,287 @@
+name: Release All Platforms
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        default: 'v1.0.0'
+      release_notes:
+        description: 'Release notes (optional)'
+        required: false
+        default: ''
+      prerelease:
+        description: 'Mark as pre-release'
+        required: false
+        default: false
+        type: boolean
+
+jobs:
+  build-all-platforms:
+    runs-on: windows-latest
+    
+    strategy:
+      matrix:
+        include:
+          - platform: x64
+            runtime: win-x64
+            display_name: "64-bit Intel/AMD"
+          - platform: x86
+            runtime: win-x86
+            display_name: "32-bit Legacy"
+          - platform: ARM64
+            runtime: win-arm64
+            display_name: "ARM64 (Surface Pro X)"
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build and publish ${{ matrix.platform }}
+      run: |
+        Write-Host "Building for ${{ matrix.platform }} (${{ matrix.display_name }})"
+        
+        dotnet publish "Windows Desktop Script UI/Windows Desktop Script UI.csproj" `
+          --configuration Release `
+          --platform ${{ matrix.platform }} `
+          --runtime ${{ matrix.runtime }} `
+          --self-contained true `
+          --output "build-output/${{ matrix.platform }}" `
+          -p:PublishSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -p:IncludeAllContentForSelfExtract=true `
+          -p:WindowsAppSDKSelfContained=true `
+          -p:EnableCompressionInSingleFile=true `
+          -p:PublishTrimmed=false `
+          -p:SatelliteResourceLanguages=en `
+          --verbosity normal
+      shell: pwsh
+
+    - name: Prepare release asset
+      id: prepare_asset
+      run: |
+        $exePath = "build-output/${{ matrix.platform }}/Windows Desktop Script UI.exe"
+        $assetName = "WindowsDesktopScriptUI-${{ github.event.inputs.version }}-${{ matrix.runtime }}.exe"
+        
+        if (Test-Path $exePath) {
+          Copy-Item $exePath $assetName
+          $fileInfo = Get-Item $assetName
+          $sizeInMB = [math]::Round($fileInfo.Length / 1MB, 2)
+          
+          echo "asset_name=$assetName" >> $env:GITHUB_OUTPUT
+          echo "asset_size=$sizeInMB" >> $env:GITHUB_OUTPUT
+          echo "success=true" >> $env:GITHUB_OUTPUT
+          
+          Write-Host "? Created: $assetName ($sizeInMB MB)"
+        } else {
+          echo "success=false" >> $env:GITHUB_OUTPUT
+          Write-Host "? Failed to create executable for ${{ matrix.platform }}"
+          exit 1
+        }
+      shell: pwsh
+
+    - name: Upload platform artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-${{ matrix.runtime }}
+        path: WindowsDesktopScriptUI-${{ github.event.inputs.version }}-${{ matrix.runtime }}.exe
+        retention-days: 30
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: build-all-platforms
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: release-assets
+
+    - name: List release assets
+      run: |
+        echo "Release assets created:"
+        find release-assets -name "*.exe" -exec basename {} \; | sort
+
+    - name: Generate release notes
+      id: release_notes
+      run: |
+        cat << 'EOF' > release_body.md
+        # Windows Desktop Script UI ${{ github.event.inputs.version }}
+        
+        ?? **Single-file executables for Windows 10/11** - No installation required!
+        
+        ## ?? Downloads
+        
+        Choose the right version for your system:
+        
+        | Platform | Recommended For | Download |
+        |----------|----------------|----------|
+        | **x64** | Most desktop PCs, laptops (Intel/AMD 64-bit) | `WindowsDesktopScriptUI-${{ github.event.inputs.version }}-win-x64.exe` |
+        | **x86** | Older 32-bit systems, legacy compatibility | `WindowsDesktopScriptUI-${{ github.event.inputs.version }}-win-x86.exe` |
+        | **ARM64** | Surface Pro X, ARM-based Windows devices | `WindowsDesktopScriptUI-${{ github.event.inputs.version }}-win-arm64.exe` |
+        
+        > ?? **Not sure which one?** Choose **x64** for modern Windows computers.
+        
+        ## ? Features
+        
+        - ?? **Self-contained** - No .NET runtime installation required
+        - ?? **Dynamic UI** - Creates forms and interfaces based on external commands  
+        - ?? **File watching** - Monitors files for changes and updates UI accordingly
+        - ?? **Modern design** - Windows 11 Acrylic backdrop and styling
+        - ? **Single file** - Everything bundled in one executable (~66MB)
+        - ?? **Command-driven** - Powerful scripting interface for UI automation
+        
+        ## ??? System Requirements
+        
+        - **Windows 10** version 1903 (build 18362) or later
+        - **Windows 11** (recommended for best experience)
+        - Appropriate CPU architecture (x64/x86/ARM64)
+        
+        ## ?? Quick Start
+        
+        1. **Download** the appropriate `.exe` file for your system
+        2. **Run** the executable directly - no installation needed!
+        3. **Create** a text file to control the UI (see usage examples below)
+        
+        ### Basic Usage
+        ```bash
+        WindowsDesktopScriptUI-${{ github.event.inputs.version }}-win-x64.exe --WatchPath="control.txt"
+        ```
+        
+        ### Advanced Options
+        ```bash
+        # Custom window settings
+        WindowsDesktopScriptUI.exe --WatchPath="script.txt" --WindowTitle="My App" --Width=800 --Height=600
+        
+        # Full screen mode
+        WindowsDesktopScriptUI.exe --WatchPath="script.txt" -FullScreen
+        
+        # Always on top
+        WindowsDesktopScriptUI.exe --WatchPath="script.txt" -AlwaysOnTop
+        
+        # Debug mode
+        WindowsDesktopScriptUI.exe --WatchPath="script.txt" -Debug
+        ```
+        
+        ## ?? Control Commands
+        
+        Add these commands to your watch file to control the UI:
+        
+        ```
+        # Set window content
+        MainText --Text="Welcome to my application!"
+        SubText --Text="Please follow the instructions below"
+        MainImage --Source="logo.jpg" --Width=200
+        
+        # Show loading screen
+        Load --Text="Processing your request..." --Type=Indeterminate
+        
+        # Create input forms
+        Input --Type=Text --Header="Enter your name" --Out="output.txt"
+        Input --Type=Password --Header="Enter password"
+        Input --Type=ComboBox --Header="Choose option" --AllowedValues="Option1|Option2|Option3"
+        Input --Type=ImageChooser --AllowedValues="img1.jpg#Image 1|img2.jpg#Image 2"
+        
+        # Hide elements
+        Load -Hide
+        Input -Hide
+        
+        # Terminate application
+        Terminate
+        ```
+        
+        ## ?? Documentation
+        
+        ### Available Input Types
+        - **Text** - Single line text input
+        - **Password** - Masked password input  
+        - **ComboBox** - Dropdown selection
+        - **ImageChooser** - Visual image selection grid
+        - **Button** - Simple button input
+        - **ButtonImage** - Image display button
+        - **ButtonVideo** - Video player with controls
+        - **ButtonText** - Text-based button
+        
+        ### Command Line Options
+        | Option | Description | Example |
+        |--------|-------------|---------|
+        | `--WatchPath` | **Required** - File to monitor for commands | `--WatchPath="commands.txt"` |
+        | `--WindowTitle` | Set custom window title | `--WindowTitle="My Application"` |
+        | `--WelcomeMessage` | Set initial welcome text | `--WelcomeMessage="Hello World!"` |
+        | `--Height` | Set window height in pixels | `--Height=600` |
+        | `--Width` | Set window width in pixels | `--Width=800` |
+        | `-FullScreen` | Launch in full screen mode | `-FullScreen` |
+        | `-AlwaysOnTop` | Keep window always on top | `-AlwaysOnTop` |
+        | `-Debug` | Enable debug logging | `-Debug` |
+        | `-h`, `-Help` | Show help message | `-Help` |
+        
+        ## ?? Build Information
+        
+        - **Framework:** .NET 8.0
+        - **UI Framework:** WinUI 3 (Windows App SDK)
+        - **Build Date:** $(date -u +%Y-%m-%d)
+        - **Commit:** ${{ github.sha }}
+        - **Branch:** ${{ github.ref_name }}
+        
+        EOF
+        
+        # Add custom release notes if provided
+        if [ -n "${{ github.event.inputs.release_notes }}" ]; then
+          echo "" >> release_body.md
+          echo "## ?? Release Notes" >> release_body.md
+          echo "" >> release_body.md
+          echo "${{ github.event.inputs.release_notes }}" >> release_body.md
+        fi
+        
+        echo "Generated release notes:"
+        cat release_body.md
+
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.event.inputs.version }}
+        release_name: Windows Desktop Script UI ${{ github.event.inputs.version }}
+        body_path: release_body.md
+        draft: false
+        prerelease: ${{ github.event.inputs.prerelease }}
+
+    - name: Upload all release assets
+      run: |
+        # Upload each platform executable
+        for exe_file in release-assets/*/WindowsDesktopScriptUI-*.exe; do
+          if [ -f "$exe_file" ]; then
+            asset_name=$(basename "$exe_file")
+            echo "Uploading: $asset_name"
+            
+            # Get file size for logging
+            size_mb=$(du -m "$exe_file" | cut -f1)
+            echo "File size: ${size_mb}MB"
+            
+            # Upload using GitHub CLI
+            gh release upload ${{ github.event.inputs.version }} "$exe_file" --clobber
+            
+            echo "? Successfully uploaded: $asset_name"
+          fi
+        done
+        
+        echo ""
+        echo "?? Release ${{ github.event.inputs.version }} created successfully!"
+        echo "?? All platform executables have been uploaded."
+        echo "?? View release: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.event.inputs.version }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
