@@ -46,13 +46,17 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
+    - name: Restore packages
+      run: |
+        dotnet restore "Windows Desktop Script UI/Windows Desktop Script UI.csproj" --verbosity normal
+
     - name: Build and publish ${{ matrix.platform }}
       run: |
         Write-Host "Building for ${{ matrix.platform }} (${{ matrix.display_name }})"
         
         dotnet publish "Windows Desktop Script UI/Windows Desktop Script UI.csproj" `
           --configuration Release `
-          --platform ${{ matrix.platform }} `
+          -p:Platform=${{ matrix.platform }} `
           --runtime ${{ matrix.runtime }} `
           --self-contained true `
           --output "build-output/${{ matrix.platform }}" `
@@ -63,6 +67,7 @@ jobs:
           -p:EnableCompressionInSingleFile=true `
           -p:PublishTrimmed=false `
           -p:SatelliteResourceLanguages=en `
+          --no-restore `
           --verbosity normal
       shell: pwsh
 
@@ -85,6 +90,12 @@ jobs:
         } else {
           echo "success=false" >> $env:GITHUB_OUTPUT
           Write-Host "? Failed to create executable for ${{ matrix.platform }}"
+          Write-Host "Contents of build-output directory:"
+          if (Test-Path "build-output/${{ matrix.platform }}") {
+            Get-ChildItem "build-output/${{ matrix.platform }}" -Recurse | Format-Table Name, Length, FullName
+          } else {
+            Write-Host "build-output/${{ matrix.platform }} directory does not exist"
+          }
           exit 1
         }
       shell: pwsh
@@ -222,6 +233,7 @@ jobs:
         | `--WelcomeMessage` | Set initial welcome text | `--WelcomeMessage="Hello World!"` |
         | `--Height` | Set window height in pixels | `--Height=600` |
         | `--Width` | Set window width in pixels | `--Width=800` |
+        | `--Opacity` | Set window opacity (0.0 to 1.0) | `--Opacity=0.8` |
         | `-FullScreen` | Launch in full screen mode | `-FullScreen` |
         | `-AlwaysOnTop` | Keep window always on top | `-AlwaysOnTop` |
         | `-Debug` | Enable debug logging | `-Debug` |

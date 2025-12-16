@@ -29,14 +29,18 @@ jobs:
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2
 
+    - name: Restore packages
+      run: |
+        dotnet restore "Windows Desktop Script UI/Windows Desktop Script UI.csproj" --verbosity normal
+
     - name: Build and publish x64 (primary platform)
       run: |
         dotnet publish "Windows Desktop Script UI/Windows Desktop Script UI.csproj" `
           --configuration Release `
-          --platform x64 `
           --runtime win-x64 `
           --self-contained true `
           --output "release-output" `
+          -p:Platform=x64 `
           -p:PublishSingleFile=true `
           -p:IncludeNativeLibrariesForSelfExtract=true `
           -p:IncludeAllContentForSelfExtract=true `
@@ -44,6 +48,7 @@ jobs:
           -p:EnableCompressionInSingleFile=true `
           -p:PublishTrimmed=false `
           -p:SatelliteResourceLanguages=en `
+          --no-restore `
           --verbosity normal
 
     - name: Prepare release asset
@@ -58,6 +63,12 @@ jobs:
           echo "File created: $releaseName ($sizeInMB MB)"
         } else {
           echo "Error: Executable not found at $exePath"
+          echo "Contents of release-output directory:"
+          if (Test-Path "release-output") {
+            Get-ChildItem "release-output" -Recurse | Format-Table Name, Length, FullName
+          } else {
+            echo "release-output directory does not exist"
+          }
           exit 1
         }
       shell: pwsh
@@ -83,6 +94,7 @@ jobs:
           - Dynamic UI generation based on external commands
           - File watching capabilities
           - Modern Windows 11 design with Acrylic backdrop
+          - Window opacity control support
           
           ### System Requirements
           - Windows 10 version 1903 (build 18362) or later
@@ -102,6 +114,7 @@ jobs:
           - `--WindowTitle="My Window"` - Set custom window title
           - `--WelcomeMessage="Hello!"` - Set welcome message
           - `--Height=600 --Width=800` - Set window dimensions
+          - `--Opacity=0.8` - Set window opacity (0.0 to 1.0)
           - `-FullScreen` - Launch in full screen
           - `-AlwaysOnTop` - Keep window always on top
           - `-Debug` - Enable debug logging
@@ -111,7 +124,11 @@ jobs:
           - `SubText --Text="Your subtitle"`  
           - `MainImage --Source="image.jpg"`
           - `Load --Text="Loading..." --Type=Indeterminate`
+          - `Load --Text="Progress" --Type=Determinate --Value=50 --ShowPercentage`
           - `Input --Type=Text --Header="Enter name"`
+          - `Input --Type=ComboBox --Header="Choose" --AllowedValues="Option1|Option2"`
+          - `Input --Type=ImageChooser --AllowedValues="img1.jpg#Caption1|img2.jpg#Caption2"`
+          - `Terminate` - Close the application
           - And many more...
 
     - name: Upload Release Asset

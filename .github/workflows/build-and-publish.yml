@@ -61,7 +61,7 @@ jobs:
       run: |
         dotnet build "${{ env.PROJECT_PATH }}" `
           --configuration ${{ env.BUILD_CONFIGURATION }} `
-          --platform ${{ matrix.platform }} `
+          -p:Platform=${{ matrix.platform }} `
           --no-restore `
           --verbosity normal
       working-directory: .
@@ -70,7 +70,7 @@ jobs:
       run: |
         dotnet publish "${{ env.PROJECT_PATH }}" `
           --configuration ${{ env.BUILD_CONFIGURATION }} `
-          --platform ${{ matrix.platform }} `
+          -p:Platform=${{ matrix.platform }} `
           --runtime win-${{ matrix.platform }} `
           --self-contained true `
           --output "publish/win-${{ matrix.platform }}" `
@@ -81,6 +81,7 @@ jobs:
           -p:EnableCompressionInSingleFile=true `
           -p:PublishTrimmed=false `
           -p:SatelliteResourceLanguages=en `
+          --no-restore `
           --verbosity normal
       working-directory: .
 
@@ -113,6 +114,10 @@ jobs:
           echo "exe_exists=true" >> $env:GITHUB_OUTPUT
         } else {
           echo "exe_exists=false" >> $env:GITHUB_OUTPUT
+          echo "Contents of publish directory:"
+          if (Test-Path "publish/win-${{ matrix.platform }}") {
+            Get-ChildItem "publish/win-${{ matrix.platform }}" -Recurse | Format-Table Name, Length, FullName
+          }
         }
       shell: pwsh
 
