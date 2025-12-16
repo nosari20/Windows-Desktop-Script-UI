@@ -387,6 +387,7 @@ namespace Windows_Desktop_Script_UI
                             }
                             else
                             {
+                                Loader.Value = 0;
                                 Loader.IsIndeterminate = true;
                             }
                         }
