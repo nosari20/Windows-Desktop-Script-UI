@@ -1,4 +1,4 @@
-name: Quick Release
+﻿name: Quick Release
 
 on:
   workflow_dispatch:
@@ -12,6 +12,10 @@ on:
         required: false
         default: false
         type: boolean
+
+permissions:
+  contents: write
+  actions: read
 
 jobs:
   quick-release:
@@ -61,6 +65,8 @@ jobs:
           $fileInfo = Get-Item $releaseName
           $sizeInMB = [math]::Round($fileInfo.Length / 1MB, 2)
           echo "File created: $releaseName ($sizeInMB MB)"
+          echo "ASSET_PATH=$releaseName" >> $env:GITHUB_ENV
+          echo "ASSET_SIZE=$sizeInMB" >> $env:GITHUB_ENV
         } else {
           echo "Error: Executable not found at $exePath"
           echo "Contents of release-output directory:"
@@ -75,68 +81,75 @@ jobs:
 
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ github.event.inputs.version }}
-        release_name: Windows Desktop Script UI ${{ github.event.inputs.version }}
+        name: Windows Desktop Script UI ${{ github.event.inputs.version }}
         draft: false
         prerelease: ${{ github.event.inputs.prerelease }}
+        files: WindowsDesktopScriptUI-${{ github.event.inputs.version }}.exe
         body: |
           ## Windows Desktop Script UI ${{ github.event.inputs.version }}
           
-          **Single-file executable for Windows 10/11 (x64)**
+          **Single-file executable for Windows 10/11 (x64) - ${{ env.ASSET_SIZE }} MB**
           
-          ### What's New
+          ### 🚀 What's New
           - Self-contained application (no .NET runtime required)
-          - Single executable file (~66MB)
+          - Single executable file (~${{ env.ASSET_SIZE }}MB)
           - Dynamic UI generation based on external commands
           - File watching capabilities
           - Modern Windows 11 design with Acrylic backdrop
           - Window opacity control support
           
-          ### System Requirements
+          ### 🖥️ System Requirements
           - Windows 10 version 1903 (build 18362) or later
           - Windows 11 (recommended)
           - x64 architecture
           
-          ### Installation
+          ### 📥 Installation
           1. Download `WindowsDesktopScriptUI-${{ github.event.inputs.version }}.exe`
           2. Run directly - no installation required!
           
-          ### Usage
-          ```
+          ### 🎯 Usage
+          ```bash
           WindowsDesktopScriptUI-${{ github.event.inputs.version }}.exe --WatchPath="path/to/your/script.txt" [OPTIONS]
           ```
           
-          **Available Options:**
-          - `--WindowTitle="My Window"` - Set custom window title
-          - `--WelcomeMessage="Hello!"` - Set welcome message
-          - `--Height=600 --Width=800` - Set window dimensions
-          - `--Opacity=0.8` - Set window opacity (0.0 to 1.0)
-          - `-FullScreen` - Launch in full screen
-          - `-AlwaysOnTop` - Keep window always on top
-          - `-Debug` - Enable debug logging
+          ### ⚙️ Available Options
+          | Option | Description | Example |
+          |--------|-------------|---------|
+          | `--WindowTitle="My Window"` | Set custom window title | `--WindowTitle="My Application"` |
+          | `--WelcomeMessage="Hello!"` | Set welcome message | `--WelcomeMessage="Welcome!"` |
+          | `--Height=600 --Width=800` | Set window dimensions | `--Height=600 --Width=800` |
+          | `--Opacity=0.8` | Set window opacity (0.0 to 1.0) | `--Opacity=0.8` |
+          | `-FullScreen` | Launch in full screen | `-FullScreen` |
+          | `-AlwaysOnTop` | Keep window always on top | `-AlwaysOnTop` |
+          | `-Debug` | Enable debug logging | `-Debug` |
           
-          ### Commands (in watch file)
-          - `MainText --Text="Your title"`
-          - `SubText --Text="Your subtitle"`  
-          - `MainImage --Source="image.jpg"`
-          - `Load --Text="Loading..." --Type=Indeterminate`
-          - `Load --Text="Progress" --Type=Determinate --Value=50 --ShowPercentage`
-          - `Input --Type=Text --Header="Enter name"`
-          - `Input --Type=ComboBox --Header="Choose" --AllowedValues="Option1|Option2"`
-          - `Input --Type=ImageChooser --AllowedValues="img1.jpg#Caption1|img2.jpg#Caption2"`
-          - `Terminate` - Close the application
-          - And many more...
-
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: WindowsDesktopScriptUI-${{ github.event.inputs.version }}.exe
-        asset_name: WindowsDesktopScriptUI-${{ github.event.inputs.version }}.exe
-        asset_content_type: application/octet-stream
+          ### 📝 Control Commands (in watch file)
+          ```bash
+          # Set window content
+          MainText --Text="Your title"
+          SubText --Text="Your subtitle"  
+          MainImage --Source="image.jpg"
+          
+          # Show loading screen
+          Load --Text="Loading..." --Type=Indeterminate
+          Load --Text="Progress" --Type=Determinate --Value=50 --ShowPercentage
+          
+          # Create input forms
+          Input --Type=Text --Header="Enter name"
+          Input --Type=ComboBox --Header="Choose" --AllowedValues="Option1|Option2"
+          Input --Type=ImageChooser --AllowedValues="img1.jpg#Caption1|img2.jpg#Caption2"
+          
+          # Control application
+          Terminate  # Close the application
+          ```
+          
+          ### 🔧 Build Information
+          - **Framework:** .NET 8.0
+          - **UI Framework:** WinUI 3 (Windows App SDK)
+          - **Runtime:** Self-contained win-x64
+          - **File Size:** ~${{ env.ASSET_SIZE }} MB
+          - **Commit:** ${{ github.sha }}
+        token: ${{ secrets.GITHUB_TOKEN }}

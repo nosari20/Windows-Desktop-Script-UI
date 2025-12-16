@@ -19,6 +19,10 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: write
+  actions: read
+
 env:
   PROJECT_PATH: 'Windows Desktop Script UI/Windows Desktop Script UI.csproj'
   SOLUTION_PATH: 'Windows Desktop Script UI.sln'
@@ -135,14 +139,10 @@ jobs:
 
     - name: Upload release assets
       if: github.event_name == 'release'
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
-        upload_url: ${{ github.event.release.upload_url }}
-        asset_path: WindowsDesktopScriptUI-${{ github.ref_name }}-win-${{ matrix.platform }}.exe
-        asset_name: WindowsDesktopScriptUI-${{ github.ref_name }}-win-${{ matrix.platform }}.exe
-        asset_content_type: application/octet-stream
+        files: WindowsDesktopScriptUI-${{ github.ref_name }}-win-${{ matrix.platform }}.exe
+        token: ${{ secrets.GITHUB_TOKEN }}
 
   create-manual-release:
     runs-on: ubuntu-latest
@@ -167,14 +167,13 @@ jobs:
 
     - name: Create GitHub Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ steps.generate_tag.outputs.tag }}
-        release_name: ${{ steps.generate_tag.outputs.release_name }}
+        name: ${{ steps.generate_tag.outputs.release_name }}
         draft: false
         prerelease: false
+        files: artifacts/*/*/*.exe
         body: |
           ## Windows Desktop Script UI Release
           
@@ -204,21 +203,4 @@ jobs:
           ```
           
           For more information, run with `--help` flag.
-
-    - name: Upload release assets
-      run: |
-        for platform in x64 x86 ARM64; do
-          artifact_dir=$(find artifacts -name "*win-$platform*" -type d | head -1)
-          if [ -d "$artifact_dir" ]; then
-            exe_file=$(find "$artifact_dir" -name "*.exe" | head -1)
-            if [ -f "$exe_file" ]; then
-              asset_name="WindowsDesktopScriptUI-${{ steps.generate_tag.outputs.tag }}-win-$platform.exe"
-              cp "$exe_file" "$asset_name"
-              
-              # Upload using GitHub CLI
-              gh release upload ${{ steps.generate_tag.outputs.tag }} "$asset_name" --clobber
-            fi
-          fi
-        done
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.GITHUB_TOKEN }}

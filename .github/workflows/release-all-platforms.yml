@@ -17,6 +17,10 @@ on:
         default: false
         type: boolean
 
+permissions:
+  contents: write
+  actions: read
+
 jobs:
   build-all-platforms:
     runs-on: windows-latest
@@ -262,38 +266,12 @@ jobs:
 
     - name: Create GitHub Release
       id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
       with:
         tag_name: ${{ github.event.inputs.version }}
-        release_name: Windows Desktop Script UI ${{ github.event.inputs.version }}
+        name: Windows Desktop Script UI ${{ github.event.inputs.version }}
         body_path: release_body.md
         draft: false
         prerelease: ${{ github.event.inputs.prerelease }}
-
-    - name: Upload all release assets
-      run: |
-        # Upload each platform executable
-        for exe_file in release-assets/*/WindowsDesktopScriptUI-*.exe; do
-          if [ -f "$exe_file" ]; then
-            asset_name=$(basename "$exe_file")
-            echo "Uploading: $asset_name"
-            
-            # Get file size for logging
-            size_mb=$(du -m "$exe_file" | cut -f1)
-            echo "File size: ${size_mb}MB"
-            
-            # Upload using GitHub CLI
-            gh release upload ${{ github.event.inputs.version }} "$exe_file" --clobber
-            
-            echo "? Successfully uploaded: $asset_name"
-          fi
-        done
-        
-        echo ""
-        echo "?? Release ${{ github.event.inputs.version }} created successfully!"
-        echo "?? All platform executables have been uploaded."
-        echo "?? View release: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.event.inputs.version }}"
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        files: release-assets/*/*.exe
+        token: ${{ secrets.GITHUB_TOKEN }}
